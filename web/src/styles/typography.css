@@ -1,0 +1,9 @@
+h1,
+h2,
+h3 {
+  overflow-wrap: break-word;
+}
+
+time {
+  color: var(--farve-daempet);
+}

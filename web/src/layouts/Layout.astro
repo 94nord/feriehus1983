@@ -1,0 +1,53 @@
+---
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/typography.css';
+import '../styles/layout.css';
+import '../styles/components.css';
+
+interface Props {
+  titel?: string;
+  beskrivelse?: string;
+}
+
+const foreningsnavn = 'Feriehusforeningen af 1983';
+const { titel, beskrivelse = `Nyheder og nyttige links fra ${foreningsnavn}.` } = Astro.props;
+const sti = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={beskrivelse} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{titel ? `${titel} · ${foreningsnavn}` : foreningsnavn}</title>
+  </head>
+  <body>
+    <a class="spring-over" href="#indhold">Spring til indhold</a>
+    <header class="site-header">
+      <div class="container site-header-inner">
+        <a class="site-titel" href="/">{foreningsnavn}</a>
+        <nav class="site-nav" aria-label="Hovedmenu">
+          <a href="/" aria-current={sti === '/' || sti.startsWith('/nyheder') ? 'page' : undefined}>Nyheder</a>
+          <a href="/information" aria-current={sti.startsWith('/information') ? 'page' : undefined}>Information</a>
+          <a href="/links" aria-current={sti === '/links' ? 'page' : undefined}>Nyttige links</a>
+        </nav>
+      </div>
+    </header>
+    <div class="container side-grid">
+      <main id="indhold" class="side-indhold">
+        <slot />
+      </main>
+      <aside class="side-aside">
+        <slot name="aside" />
+      </aside>
+    </div>
+    <footer class="site-footer">
+      <div class="container">
+        <p>{foreningsnavn}</p>
+      </div>
+    </footer>
+  </body>
+</html>

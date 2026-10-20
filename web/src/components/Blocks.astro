@@ -1,0 +1,59 @@
+---
+import type { Block, ListeElement } from '../lib/strapi';
+import { inlineTilHtml } from '../lib/inline';
+import { billedeSrcset, medieUrl } from '../lib/strapi';
+
+interface Props {
+  blocks: (Block | ListeElement)[];
+}
+
+const { blocks } = Astro.props;
+---
+
+{
+  blocks.map((block) => {
+    switch (block.type) {
+      case 'paragraph':
+        return <p set:html={inlineTilHtml(block.children)} />;
+      case 'heading': {
+        // h1 er forbeholdt nyhedens titel, så overskrifter i teksten starter ved h2
+        const Tag = `h${Math.max(2, Math.min(block.level + 1, 6))}`;
+        return <Tag set:html={inlineTilHtml(block.children)} />;
+      }
+      case 'quote':
+        return <blockquote set:html={inlineTilHtml(block.children)} />;
+      case 'code':
+        return <pre><code set:html={inlineTilHtml(block.children)} /></pre>;
+      case 'list': {
+        const Tag = block.format === 'ordered' ? 'ol' : 'ul';
+        return (
+          <Tag>
+            {block.children.map((element) =>
+              element.type === 'list-item' ? (
+                <li set:html={inlineTilHtml(element.children)} />
+              ) : (
+                <li><Astro.self blocks={[element]} /></li>
+              )
+            )}
+          </Tag>
+        );
+      }
+      case 'image':
+        return (
+          <figure>
+            <img
+              src={medieUrl(block.image.url)}
+              srcset={billedeSrcset(block.image)}
+              sizes="(max-width: 768px) 100vw, 60vw"
+              width={block.image.width}
+              height={block.image.height}
+              alt={block.image.alternativeText ?? ''}
+              loading="lazy"
+            />
+          </figure>
+        );
+      default:
+        return null;
+    }
+  })
+}

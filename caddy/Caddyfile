@@ -1,0 +1,31 @@
+# Adresserne kommer fra .env:
+#   produktion: feriehus1983.dk og admin.feriehus1983.dk (automatisk HTTPS)
+#   lokalt:     http://localhost og http://admin.localhost
+
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# Billeder fra Strapis mediebibliotek
+	handle /uploads/* {
+		reverse_proxy cms:1337
+	}
+
+	handle {
+		reverse_proxy web:4321
+	}
+}
+
+{$ADMIN_ADDRESS} {
+	encode zstd gzip
+
+	request_body {
+		max_size 20MB
+	}
+
+	# Login og registrering for slutbrugere bruges ikke
+	@blokeret path /api/auth/* /api/users /api/users/* /api/connect/*
+	respond @blokeret 404
+
+	redir / /admin
+	reverse_proxy cms:1337
+}

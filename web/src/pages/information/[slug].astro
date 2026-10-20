@@ -1,0 +1,31 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Blocks from '../../components/Blocks.astro';
+import NyhedsListe from '../../components/NyhedsListe.astro';
+import { hentSide } from '../../lib/strapi';
+
+const { slug = '' } = Astro.params;
+
+let side;
+try {
+  side = await hentSide(slug);
+} catch (e) {
+  console.error(e);
+  Astro.response.status = 503;
+}
+if (side === null) return Astro.rewrite('/404');
+---
+
+<Layout titel={side?.titel}>
+  <p><a href="/information">Information</a></p>
+  {
+    side && (
+      <article class="artikel">
+        <h1>{side.titel}</h1>
+        {side.indhold && <Blocks blocks={side.indhold} />}
+      </article>
+    )
+  }
+  {!side && <p class="besked">Siden kunne ikke hentes lige nu. Prøv igen om lidt.</p>}
+  <NyhedsListe slot="aside" side={1} />
+</Layout>

@@ -1,0 +1,26 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Artikel from '../../components/Artikel.astro';
+import NyhedsListe from '../../components/NyhedsListe.astro';
+import { hentNyhed } from '../../lib/strapi';
+import { laesSide } from '../../lib/side';
+
+const { slug = '' } = Astro.params;
+const side = laesSide(Astro.url);
+if (side === null) return Astro.rewrite('/404');
+
+let nyhed;
+try {
+  nyhed = await hentNyhed(slug);
+} catch (e) {
+  console.error(e);
+  Astro.response.status = 503;
+}
+if (nyhed === null) return Astro.rewrite('/404');
+---
+
+<Layout titel={nyhed?.titel} beskrivelse={nyhed?.uddrag}>
+  {nyhed && <Artikel nyhed={nyhed} />}
+  {!nyhed && <p class="besked">Nyheden kunne ikke hentes lige nu. Prøv igen om lidt.</p>}
+  <NyhedsListe slot="aside" side={side} aktivSlug={slug} />
+</Layout>

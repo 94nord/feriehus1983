@@ -1,0 +1,27 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: var(--rod-stoerrelse);
+}
+
+@media (max-width: 400px) {
+  html {
+    font-size: var(--rod-stoerrelse-lille);
+  }
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  line-height: 1.5;
+  color: var(--farve-tekst);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}

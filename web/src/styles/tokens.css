@@ -1,0 +1,14 @@
+:root {
+  --farve-tekst: #111111;
+  --farve-daempet: #555555;
+  --farve-kant: #cccccc;
+  --font: system-ui, sans-serif;
+  --rod-stoerrelse: 16px;
+  --rod-stoerrelse-lille: 12px;
+  --afstand-s: 0.5rem;
+  --afstand-m: 1rem;
+  --afstand-l: 2rem;
+  --bredde-max: 72rem;
+  --bredde-aside: 20rem;
+  --kant: 1px solid var(--farve-kant);
+}

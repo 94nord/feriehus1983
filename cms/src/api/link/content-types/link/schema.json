@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "links",
+  "info": {
+    "singularName": "link",
+    "pluralName": "links",
+    "displayName": "Link",
+    "description": "Nyttige links"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "titel": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120
+    },
+    "url": {
+      "type": "string",
+      "required": true,
+      "regex": "^https?://"
+    },
+    "beskrivelse": {
+      "type": "text",
+      "maxLength": 200
+    },
+    "sortering": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}
