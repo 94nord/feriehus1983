@@ -19,6 +19,10 @@ export default defineConfig({
       // Prefix til billeder; tom bag Caddy, http://localhost:1337 ved npm run dev
       MEDIA_URL: envField.string({ context: 'server', access: 'secret', default: '' }),
       // Hvor længe svar fra Strapi caches; 0 slår cachen fra (bruges i tests)
+      // Nøgle, som Strapi sender med, når admin åbner en forhåndsvisning
+      PREVIEW_SECRET: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // Admin-domænet, som må vise forhåndsvisningen i en ramme
+      ADMIN_URL: envField.string({ context: 'server', access: 'secret', default: '' }),
       STRAPI_CACHE_SECONDS: envField.number({ context: 'server', access: 'secret', default: 60 }),
     },
   },

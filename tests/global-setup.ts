@@ -17,6 +17,8 @@ function skrivEnv(strapiToken = '') {
     TRANSFER_TOKEN_SALT: hemmelighed(),
     JWT_SECRET: hemmelighed(),
     ENCRYPTION_KEY: hemmelighed(),
+    SITE_URL: BASE_URL,
+    PREVIEW_SECRET: randomBytes(32).toString('hex'),
     STRAPI_CACHE_SECONDS: '0',
     STRAPI_TOKEN: strapiToken,
   };

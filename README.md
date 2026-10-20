@@ -69,6 +69,17 @@ glemt sin adgangskode, beder en Super Admin om at sætte en ny under **Settings 
 login-siden og ingen Strapi-tutorials. Logoet i `cms/src/admin/extensions/logo.svg` er
 midlertidigt og skal skiftes til det rigtige, når det kommer.
 
+## Forhåndsvisning
+
+Nyheder og sider har en **Preview**-knap i admin, der viser kladden på hjemmesiden,
+før den publiceres. Strapi bygger adressen (`cms/config/admin.ts`), og Astro viser den
+på `/preview` (`web/src/pages/preview.astro`).
+
+- Kræver `SITE_URL` og `PREVIEW_SECRET` i `.env` (genereres af `scripts/generate-env.sh`).
+- Uden den rigtige nøgle giver `/preview` 404. Svaret caches ikke, indekseres ikke og
+  må kun vises i en ramme fra admin-domænet.
+- Links har ingen egen side og derfor ingen forhåndsvisning.
+
 ## Ændre datamodellen
 
 Content-Type Builder virker kun i udviklingstilstand og er slået fra i Docker.

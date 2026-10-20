@@ -1,0 +1,61 @@
+---
+import { timingSafeEqual } from 'node:crypto';
+import { ADMIN_URL, PREVIEW_SECRET } from 'astro:env/server';
+import Layout from '../layouts/Layout.astro';
+import Artikel from '../components/Artikel.astro';
+import Blocks from '../components/Blocks.astro';
+import NyhedsListe from '../components/NyhedsListe.astro';
+import { hentTilPreview, type Nyhed, type PreviewType, type Side } from '../lib/strapi';
+
+// Forhåndsvisning af nyheder og sider fra Strapi-admin. Kræver den hemmelige nøgle,
+// caches aldrig, indekseres ikke og må kun vises i en ramme i admin.
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+if (ADMIN_URL) {
+  Astro.response.headers.set('Content-Security-Policy', `frame-ancestors 'self' ${ADMIN_URL}`);
+}
+
+function nøglenPasser(givet: string | null) {
+  if (!PREVIEW_SECRET || !givet) return false;
+  const a = Buffer.from(givet);
+  const b = Buffer.from(PREVIEW_SECRET);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+const q = Astro.url.searchParams;
+const type = q.get('type');
+const id = q.get('id');
+const status = q.get('status') === 'published' ? 'published' : 'draft';
+
+if (!nøglenPasser(q.get('hemmelighed')) || (type !== 'nyhed' && type !== 'side') || !id) {
+  return Astro.rewrite('/404');
+}
+
+let indhold: Nyhed | Side | null = null;
+let fejl = false;
+try {
+  indhold = await hentTilPreview(type as PreviewType, id, status);
+} catch (e) {
+  console.error(e);
+  fejl = true;
+  Astro.response.status = 503;
+}
+if (!indhold && !fejl) return Astro.rewrite('/404');
+---
+
+<Layout titel={indhold ? `Forhåndsvisning: ${indhold.titel}` : 'Forhåndsvisning'}>
+  <p class="besked preview-besked">
+    {status === 'draft' ? 'Forhåndsvisning af kladde. Siden er ikke publiceret.' : 'Forhåndsvisning af den publicerede version.'}
+  </p>
+  {fejl && <p class="besked">Forhåndsvisningen kunne ikke hentes lige nu. Prøv igen om lidt.</p>}
+  {indhold && type === 'nyhed' && <Artikel nyhed={indhold as Nyhed} />}
+  {
+    indhold && type === 'side' && (
+      <article class="artikel">
+        <h1>{indhold.titel}</h1>
+        {indhold.indhold && <Blocks blocks={indhold.indhold} />}
+      </article>
+    )
+  }
+  <NyhedsListe slot="aside" side={1} />
+</Layout>

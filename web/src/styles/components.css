@@ -314,3 +314,8 @@
 .side-indhold > h1 + p {
   margin-top: var(--afstand-m);
 }
+
+/* Forhåndsvisning fra admin */
+.preview-besked {
+  margin-bottom: var(--afstand-l);
+}

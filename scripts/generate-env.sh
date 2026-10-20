@@ -17,6 +17,7 @@ sed \
   -e "s|^TRANSFER_TOKEN_SALT=.*|TRANSFER_TOKEN_SALT=$(hemmelighed)|" \
   -e "s|^JWT_SECRET=.*|JWT_SECRET=$(hemmelighed)|" \
   -e "s|^ENCRYPTION_KEY=.*|ENCRYPTION_KEY=$(hemmelighed)|" \
+  -e "s|^PREVIEW_SECRET=.*|PREVIEW_SECRET=$(openssl rand -hex 32)|" \
   .env.example > .env
 chmod 600 .env
 echo ".env oprettet."

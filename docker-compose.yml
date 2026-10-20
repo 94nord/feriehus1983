@@ -39,6 +39,8 @@ services:
       TRANSFER_TOKEN_SALT: ${TRANSFER_TOKEN_SALT}
       JWT_SECRET: ${JWT_SECRET}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      SITE_URL: ${SITE_URL}
+      PREVIEW_SECRET: ${PREVIEW_SECRET}
     volumes:
       - ./data/db:/opt/app/data/db
       - ./data/uploads:/opt/app/public/uploads
@@ -58,6 +60,8 @@ services:
       STRAPI_URL: http://cms:1337
       STRAPI_TOKEN: ${STRAPI_TOKEN}
       STRAPI_CACHE_SECONDS: ${STRAPI_CACHE_SECONDS:-60}
+      PREVIEW_SECRET: ${PREVIEW_SECRET}
+      ADMIN_URL: ${CMS_PUBLIC_URL}
     depends_on:
       cms:
         condition: service_healthy

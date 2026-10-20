@@ -78,8 +78,8 @@ interface Svar<T> {
 
 const cache = new Map<string, { udloeber: number; data: unknown }>();
 
-async function hent<T>(sti: string): Promise<Svar<T>> {
-  const gemt = cache.get(sti);
+async function hent<T>(sti: string, { brugCache = true } = {}): Promise<Svar<T>> {
+  const gemt = brugCache ? cache.get(sti) : undefined;
   if (gemt && gemt.udloeber > Date.now()) return gemt.data as Svar<T>;
 
   const res = await fetch(`${STRAPI_URL}${sti}`, {
@@ -88,7 +88,7 @@ async function hent<T>(sti: string): Promise<Svar<T>> {
   if (!res.ok) throw new Error(`Strapi svarede ${res.status} på ${sti}`);
 
   const data = (await res.json()) as Svar<T>;
-  cache.set(sti, { udloeber: Date.now() + CACHE_MS, data });
+  if (brugCache) cache.set(sti, { udloeber: Date.now() + CACHE_MS, data });
   return data;
 }
 
@@ -152,6 +152,22 @@ export async function hentSide(slug: string) {
   const params = new URLSearchParams({ 'filters[slug][$eq]': slug });
   const svar = await hent<Side[]>(`/api/sider?${params}`);
   return svar.data[0] ?? null;
+}
+
+export type PreviewType = 'nyhed' | 'side';
+
+// Forhåndsvisning: henter en nyhed eller side (også kladder) direkte, uden cache
+export async function hentTilPreview(type: PreviewType, documentId: string, status: 'draft' | 'published') {
+  const sti = type === 'nyhed' ? 'nyheder' : 'sider';
+  const params = new URLSearchParams({ status });
+  if (type === 'nyhed') params.set('populate', 'billede');
+  try {
+    const svar = await hent<Nyhed | Side>(`/api/${sti}/${encodeURIComponent(documentId)}?${params}`, { brugCache: false });
+    return svar.data;
+  } catch (e) {
+    if (e instanceof Error && e.message.includes('svarede 404')) return null;
+    throw e;
+  }
 }
 
 export function medieUrl(url: string) {
