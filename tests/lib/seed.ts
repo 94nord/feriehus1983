@@ -9,6 +9,7 @@ export const SENESTE_NYHED = {
   slug: 'generalforsamling-og-nyt-om-vejene',
   alt: 'Havet ved feriehusene en stille morgen',
 };
+export const FOTO_I_TEKST = { alt: 'Stort foto med GPS-data' };
 export const ANTAL_TESTNYHEDER = 24;
 export const LINKS = [
   { titel: 'Kommunen', url: 'https://example.com/kommune' },
@@ -38,13 +39,20 @@ export async function seed(token: string) {
   const nyhed = (data: Data) => opret('/api/nyheder', data);
   const kladde = (sti: string, data: Data) => opret(`${sti}?status=draft`, data);
 
-  const form = new FormData();
-  const fil = readFileSync(path.join(ROD, 'tests/fixtures/billede.jpg'));
-  form.append('files', new Blob([fil], { type: 'image/jpeg' }), 'havet.jpg');
-  form.append('fileInfo', JSON.stringify({ alternativeText: SENESTE_NYHED.alt }));
-  const upload = await fetch(`${ADMIN_URL}/api/upload`, { method: 'POST', headers, body: form });
-  if (!upload.ok) throw new Error(`upload: ${upload.status} ${await upload.text()}`);
-  const [billede] = (await upload.json()) as { id: number }[];
+  async function upload(filnavn: string, navn: string, alt: string) {
+    const form = new FormData();
+    const fil = readFileSync(path.join(ROD, 'tests/fixtures', filnavn));
+    form.append('files', new Blob([fil], { type: 'image/jpeg' }), navn);
+    form.append('fileInfo', JSON.stringify({ alternativeText: alt }));
+    const res = await fetch(`${ADMIN_URL}/api/upload`, { method: 'POST', headers, body: form });
+    if (!res.ok) throw new Error(`upload ${filnavn}: ${res.status} ${await res.text()}`);
+    const [fil0] = (await res.json()) as Data[];
+    return fil0;
+  }
+
+  const billede = await upload('billede.jpg', 'havet.jpg', SENESTE_NYHED.alt);
+  // 3200x1800 med EXIF og GPS; skal skaleres ned og renses ved upload
+  const foto = await upload('stort-foto-med-gps.jpg', 'foto.jpg', FOTO_I_TEKST.alt);
 
   for (let i = 1; i <= ANTAL_TESTNYHEDER; i++) {
     await nyhed({
@@ -59,7 +67,7 @@ export async function seed(token: string) {
     titel: SENESTE_NYHED.titel,
     slug: SENESTE_NYHED.slug,
     uddrag: 'Indkaldelse til generalforsamling og status på vejarbejdet.',
-    billede: billede.id,
+    billede: billede.id as number,
     indhold: [
       {
         type: 'paragraph',
@@ -80,6 +88,7 @@ export async function seed(token: string) {
           { type: 'list-item', children: [{ type: 'text', text: 'Beretning <script>window.__xss = 1</script>' }] },
         ],
       },
+      { type: 'image', image: foto, children: [{ type: 'text', text: '' }] },
     ],
   });
 

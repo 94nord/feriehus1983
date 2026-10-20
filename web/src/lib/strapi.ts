@@ -158,10 +158,18 @@ export function medieUrl(url: string) {
   return url.startsWith('http') ? url : `${MEDIA_URL}${url}`;
 }
 
-export function billedeSrcset(billede: Billede) {
+// Strapis genererede størrelser; originalen sendes kun, hvis der ikke er nogen
+function billedeStoerrelser(billede: Billede): BilledeFormat[] {
   const formater = Object.values(billede.formats ?? {});
-  return [...formater, billede]
-    .sort((a, b) => a.width - b.width)
+  return (formater.length > 0 ? formater : [billede]).sort((a, b) => a.width - b.width);
+}
+
+export function billedeSrc(billede: Billede) {
+  return medieUrl(billedeStoerrelser(billede).at(-1)!.url);
+}
+
+export function billedeSrcset(billede: Billede) {
+  return billedeStoerrelser(billede)
     .map((f) => `${medieUrl(f.url)} ${f.width}w`)
     .join(', ');
 }

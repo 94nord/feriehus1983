@@ -1,7 +1,7 @@
 ---
 import type { Block, ListeElement } from '../lib/strapi';
 import { inlineTilHtml } from '../lib/inline';
-import { billedeSrcset, medieUrl } from '../lib/strapi';
+import { billedeSrc, billedeSrcset } from '../lib/strapi';
 
 interface Props {
   blocks: (Block | ListeElement)[];
@@ -42,7 +42,7 @@ const { blocks } = Astro.props;
         return (
           <figure>
             <img
-              src={medieUrl(block.image.url)}
+              src={billedeSrc(block.image)}
               srcset={billedeSrcset(block.image)}
               sizes="(max-width: 768px) 100vw, 60vw"
               width={block.image.width}

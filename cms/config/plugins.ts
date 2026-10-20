@@ -36,6 +36,13 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
     config: {
       // Max 10 MB pr. fil
       sizeLimit: 10 * 1024 * 1024,
+      // Størrelser der laves ved upload (thumbnail laves altid); xlarge er den største, siden bruger
+      breakpoints: {
+        xlarge: 1600,
+        large: 1000,
+        medium: 750,
+        small: 500,
+      },
       security: {
         allowedTypes: allowedMediaTypes,
         deniedTypes,

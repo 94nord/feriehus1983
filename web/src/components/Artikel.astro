@@ -1,6 +1,6 @@
 ---
 import type { Nyhed } from '../lib/strapi';
-import { billedeSrcset, formaterDato, medieUrl } from '../lib/strapi';
+import { billedeSrc, billedeSrcset, formaterDato } from '../lib/strapi';
 import Blocks from './Blocks.astro';
 
 interface Props {
@@ -19,7 +19,7 @@ const { nyhed } = Astro.props;
     nyhed.billede && (
       <figure class="artikel-billede">
         <img
-          src={medieUrl(nyhed.billede.url)}
+          src={billedeSrc(nyhed.billede)}
           srcset={billedeSrcset(nyhed.billede)}
           sizes="(max-width: 768px) 100vw, 60vw"
           width={nyhed.billede.width}
