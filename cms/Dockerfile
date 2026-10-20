@@ -1,21 +1,19 @@
-# Byggetrin: installerer alt og bygger admin-panelet
+# Build stage: installs everything and builds the admin panel
 FROM node:22-bookworm-slim AS build
 WORKDIR /opt/app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
 ENV NODE_ENV=production
-# Admin-bygningen kræver mere hukommelse end Nodes standardgrænse
+# The admin build needs more memory than Node's default limit
 ENV NODE_OPTIONS=--max-old-space-size=2048
 RUN npm run build && npm prune --omit=dev
 
-# Runtime: kun det færdige resultat
+# Runtime: only the finished result
 FROM node:22-bookworm-slim
 LABEL org.opencontainers.image.source=https://github.com/94nord/feriehus1983
 WORKDIR /opt/app
 ENV NODE_ENV=production
-# Admin-bygningen kræver mere hukommelse end Nodes standardgrænse
-ENV NODE_OPTIONS=--max-old-space-size=2048
 COPY --from=build --chown=node:node /opt/app ./
 RUN mkdir -p data/db public/uploads && chown -R node:node data public/uploads
 USER node

@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Deployer en ny version på serveren. Kaldes af GitHub Actions over SSH:
+# Deploys a new version on the server. Called by GitHub Actions over SSH:
 #   scripts/deploy.sh <image-tag>
-# Tager backup, henter de testede images, starter dem og ruller tilbage,
-# hvis siden ikke svarer bagefter.
+# Takes a backup, pulls the tested images, starts them and rolls back
+# if the site does not respond afterwards.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-NY_TAG="${1:?Angiv image-tag (commit-SHA)}"
-FORRIGE_TAG="$(sed -n 's/^IMAGE_TAG=//p' .env)"
+NEW_TAG="${1:?Specify the image tag (commit SHA)}"
+PREVIOUS_TAG="$(sed -n 's/^IMAGE_TAG=//p' .env)"
 
-saet_tag() {
+set_tag() {
   if grep -q '^IMAGE_TAG=' .env; then
     sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=$1/" .env
   else
@@ -22,11 +22,11 @@ start() {
   docker compose up -d --no-build --wait
 }
 
-site_svarer() {
-  local adresse
-  adresse="$(sed -n 's/^SITE_ADDRESS=//p' .env)"
+site_responds() {
+  local address
+  address="$(sed -n 's/^SITE_ADDRESS=//p' .env)"
   for _ in $(seq 1 30); do
-    if curl -fsS -o /dev/null "https://${adresse}/"; then
+    if curl -fsS -o /dev/null "https://${address}/"; then
       return 0
     fi
     sleep 2
@@ -34,25 +34,25 @@ site_svarer() {
   return 1
 }
 
-# Backup før deploy: Strapi ændrer databasen ved opstart, hvis datamodellen er ændret
+# Backup before deploy: Strapi changes the database on startup if the data model has changed
 if [ -f .env.backup ] && [ -f data/db/data.db ]; then
   scripts/backup.sh
 fi
 
-echo "Deployer ${NY_TAG} (forrige: ${FORRIGE_TAG:-ingen})"
-saet_tag "$NY_TAG"
+echo "Deploying ${NEW_TAG} (previous: ${PREVIOUS_TAG:-none})"
+set_tag "$NEW_TAG"
 start
 
-if site_svarer; then
+if site_responds; then
   docker image prune -f > /dev/null
-  echo "Deploy af ${NY_TAG} gennemført"
+  echo "Deploy of ${NEW_TAG} completed"
   exit 0
 fi
 
-echo "Siden svarer ikke efter deploy" >&2
-if [ -n "$FORRIGE_TAG" ]; then
-  echo "Ruller tilbage til ${FORRIGE_TAG}" >&2
-  saet_tag "$FORRIGE_TAG"
+echo "The site does not respond after deploy" >&2
+if [ -n "$PREVIOUS_TAG" ]; then
+  echo "Rolling back to ${PREVIOUS_TAG}" >&2
+  set_tag "$PREVIOUS_TAG"
   start
 fi
 exit 1

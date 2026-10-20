@@ -15,21 +15,21 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Admin => 
   secrets: {
     encryptionKey: env('ENCRYPTION_KEY')!,
   },
-  // Forhåndsvisning af kladder på hjemmesiden, se web/src/pages/preview.astro
+  // Preview of drafts on the website, see web/src/pages/preview.astro
   preview: {
     enabled: env.bool('PREVIEW_ENABLED', true),
     config: {
       allowedOrigins: [env('SITE_URL', 'http://localhost')],
       handler(uid, { documentId, status }) {
-        const typer: Record<string, string> = { 'api::nyhed.nyhed': 'nyhed', 'api::side.side': 'side' };
-        const type = typer[uid];
+        const types: Record<string, string> = { 'api::article.article': 'article', 'api::page.page': 'page' };
+        const type = types[uid];
         if (!type || !documentId) return null;
 
         const params = new URLSearchParams({
           type,
           id: documentId,
           status: status ?? 'draft',
-          hemmelighed: env('PREVIEW_SECRET', ''),
+          secret: env('PREVIEW_SECRET', ''),
         });
         return `${env('SITE_URL', 'http://localhost')}/preview?${params}`;
       },

@@ -1,6 +1,6 @@
 import type { Core } from '@strapi/strapi';
 
-// Bestyrelsen skal kun bruge billeder og PDF
+// The board only needs images and PDF
 const allowedMediaTypes = ['image/*', 'application/pdf'];
 
 const deniedTypes = [
@@ -26,9 +26,9 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
   },
   upload: {
     config: {
-      // Max 10 MB pr. fil
+      // Max 10 MB per file
       sizeLimit: 10 * 1024 * 1024,
-      // Størrelser der laves ved upload (thumbnail laves altid); xlarge er den største, siden bruger
+      // Sizes generated on upload (thumbnail is always generated); xlarge is the largest the site uses
       breakpoints: {
         xlarge: 1600,
         large: 1000,

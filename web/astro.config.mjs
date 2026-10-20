@@ -12,16 +12,16 @@ export default defineConfig({
   }),
   env: {
     schema: {
-      // Strapi på det interne Docker-netværk, fx http://cms:1337
+      // Strapi on the internal Docker network, e.g. http://cms:1337
       STRAPI_URL: envField.string({ context: 'server', access: 'secret', default: 'http://localhost:1337' }),
-      // API-token med kun læseadgang, oprettes i Strapi-admin
+      // Read-only API token, created in the Strapi admin
       STRAPI_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
-      // Prefix til billeder; tom bag Caddy, http://localhost:1337 ved npm run dev
+      // Prefix for images; empty behind Caddy, http://localhost:1337 with npm run dev
       MEDIA_URL: envField.string({ context: 'server', access: 'secret', default: '' }),
-      // Hvor længe svar fra Strapi caches; 0 slår cachen fra (bruges i tests)
-      // Nøgle, som Strapi sender med, når admin åbner en forhåndsvisning
+      // How long Strapi responses are cached; 0 disables the cache (used in tests)
+      // Secret Strapi includes when the admin opens a preview
       PREVIEW_SECRET: envField.string({ context: 'server', access: 'secret', optional: true }),
-      // Admin-domænet, som må vise forhåndsvisningen i en ramme
+      // The admin origin allowed to frame the preview
       ADMIN_URL: envField.string({ context: 'server', access: 'secret', default: '' }),
       STRAPI_CACHE_SECONDS: envField.number({ context: 'server', access: 'secret', default: 60 }),
     },

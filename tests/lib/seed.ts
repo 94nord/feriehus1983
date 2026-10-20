@@ -1,74 +1,75 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { ADMIN_URL, ROD } from './stack';
+import { ADMIN_URL, ROOT } from './stack';
 
 type Data = Record<string, unknown>;
 
-export const SENESTE_NYHED = {
-  titel: 'Generalforsamling og nyt om vejene',
+// The content is Danish because it is what visitors see
+export const LATEST_ARTICLE = {
+  title: 'Generalforsamling og nyt om vejene',
   slug: 'generalforsamling-og-nyt-om-vejene',
   alt: 'Havet ved feriehusene en stille morgen',
 };
-export const FOTO_I_TEKST = { alt: 'Stort foto med GPS-data' };
-export const ANTAL_TESTNYHEDER = 24;
+export const PHOTO_IN_BODY = { alt: 'Stort foto med GPS-data' };
+export const TEST_ARTICLE_COUNT = 24;
 export const LINKS = [
-  { titel: 'Kommunen', url: 'https://example.com/kommune' },
-  { titel: 'Forsyning', url: 'https://example.com/forsyning' },
-  { titel: 'Vedtægter', url: 'https://example.com/vedtaegter' },
+  { title: 'Kommunen', url: 'https://example.com/kommune' },
+  { title: 'Forsyning', url: 'https://example.com/forsyning' },
+  { title: 'Vedtægter', url: 'https://example.com/vedtaegter' },
 ];
-export const SIDER = [
-  { titel: 'Om foreningen', slug: 'om-foreningen' },
-  { titel: 'Ordensregler', slug: 'ordensregler' },
+export const PAGES = [
+  { title: 'Om foreningen', slug: 'om-foreningen' },
+  { title: 'Ordensregler', slug: 'ordensregler' },
 ];
 
-const tekst = (t: string) => [{ type: 'paragraph', children: [{ type: 'text', text: t }] }];
+const paragraph = (text: string) => [{ type: 'paragraph', children: [{ type: 'text', text }] }];
 
 export async function seed(token: string) {
   const headers = { Authorization: `Bearer ${token}` };
 
-  async function opret(sti: string, data: Data) {
-    const res = await fetch(`${ADMIN_URL}${sti}`, {
+  async function create(path: string, data: Data) {
+    const res = await fetch(`${ADMIN_URL}${path}`, {
       method: 'POST',
       headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({ data }),
     });
-    if (!res.ok) throw new Error(`POST ${sti}: ${res.status} ${await res.text()}`);
+    if (!res.ok) throw new Error(`POST ${path}: ${res.status} ${await res.text()}`);
   }
 
-  // Strapis REST API publicerer som standard; kladder kræver ?status=draft
-  const nyhed = (data: Data) => opret('/api/nyheder', data);
-  const kladde = (sti: string, data: Data) => opret(`${sti}?status=draft`, data);
+  // Strapi's REST API publishes by default; drafts need ?status=draft
+  const article = (data: Data) => create('/api/articles', data);
+  const draft = (path: string, data: Data) => create(`${path}?status=draft`, data);
 
-  async function upload(filnavn: string, navn: string, alt: string) {
+  async function upload(fileName: string, name: string, alt: string) {
     const form = new FormData();
-    const fil = readFileSync(path.join(ROD, 'tests/fixtures', filnavn));
-    form.append('files', new Blob([fil], { type: 'image/jpeg' }), navn);
+    const file = readFileSync(path.join(ROOT, 'tests/fixtures', fileName));
+    form.append('files', new Blob([file], { type: 'image/jpeg' }), name);
     form.append('fileInfo', JSON.stringify({ alternativeText: alt }));
     const res = await fetch(`${ADMIN_URL}/api/upload`, { method: 'POST', headers, body: form });
-    if (!res.ok) throw new Error(`upload ${filnavn}: ${res.status} ${await res.text()}`);
-    const [fil0] = (await res.json()) as Data[];
-    return fil0;
+    if (!res.ok) throw new Error(`upload ${fileName}: ${res.status} ${await res.text()}`);
+    const [uploaded] = (await res.json()) as Data[];
+    return uploaded;
   }
 
-  const billede = await upload('billede.jpg', 'havet.jpg', SENESTE_NYHED.alt);
-  // 3200x1800 med EXIF og GPS; skal skaleres ned og renses ved upload
-  const foto = await upload('stort-foto-med-gps.jpg', 'foto.jpg', FOTO_I_TEKST.alt);
+  const image = await upload('image.jpg', 'havet.jpg', LATEST_ARTICLE.alt);
+  // 3200x1800 with EXIF and GPS; must be scaled down and cleaned on upload
+  const photo = await upload('large-photo-with-gps.jpg', 'foto.jpg', PHOTO_IN_BODY.alt);
 
-  for (let i = 1; i <= ANTAL_TESTNYHEDER; i++) {
-    await nyhed({
-      titel: `Testnyhed nummer ${i}`,
+  for (let i = 1; i <= TEST_ARTICLE_COUNT; i++) {
+    await article({
+      title: `Testnyhed nummer ${i}`,
       slug: `testnyhed-${i}`,
-      uddrag: `Kort uddrag af testnyhed ${i}.`,
-      indhold: tekst(`Brødtekst for testnyhed ${i}.`),
+      excerpt: `Kort uddrag af testnyhed ${i}.`,
+      body: paragraph(`Brødtekst for testnyhed ${i}.`),
     });
   }
 
-  await nyhed({
-    titel: SENESTE_NYHED.titel,
-    slug: SENESTE_NYHED.slug,
-    uddrag: 'Indkaldelse til generalforsamling og status på vejarbejdet.',
-    billede: billede.id as number,
-    indhold: [
+  await article({
+    title: LATEST_ARTICLE.title,
+    slug: LATEST_ARTICLE.slug,
+    excerpt: 'Indkaldelse til generalforsamling og status på vejarbejdet.',
+    image: image.id as number,
+    body: [
       {
         type: 'paragraph',
         children: [
@@ -88,19 +89,19 @@ export async function seed(token: string) {
           { type: 'list-item', children: [{ type: 'text', text: 'Beretning <script>window.__xss = 1</script>' }] },
         ],
       },
-      { type: 'image', image: foto, children: [{ type: 'text', text: '' }] },
+      { type: 'image', image: photo, children: [{ type: 'text', text: '' }] },
     ],
   });
 
-  await kladde('/api/nyheder', { titel: 'Kladde', slug: 'kladde', uddrag: 'Kladde', indhold: tekst('Kladde') });
+  await draft('/api/articles', { title: 'Kladde', slug: 'kladde', excerpt: 'Kladde', body: paragraph('Kladde') });
 
   for (const [i, link] of LINKS.entries()) {
-    await opret('/api/links', { ...link, sortering: i });
+    await create('/api/links', { ...link, sortOrder: i });
   }
 
-  // Oprettes i omvendt rækkefølge for at teste, at sortering bestemmer listen
-  for (const [i, side] of [...SIDER.entries()].reverse()) {
-    await opret('/api/sider', { ...side, sortering: i, indhold: tekst(`Tekst om ${side.titel}.`) });
+  // Created in reverse order to test that sortOrder decides the list
+  for (const [i, page] of [...PAGES.entries()].reverse()) {
+    await create('/api/pages', { ...page, sortOrder: i, body: paragraph(`Tekst om ${page.title}.`) });
   }
-  await kladde('/api/sider', { titel: 'Kladdeside', slug: 'kladdeside', sortering: 9, indhold: tekst('Kladde') });
+  await draft('/api/pages', { title: 'Kladdeside', slug: 'kladdeside', sortOrder: 9, body: paragraph('Kladde') });
 }

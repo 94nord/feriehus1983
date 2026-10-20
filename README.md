@@ -45,8 +45,8 @@ Rollen oprettes og opdateres automatisk ved hver opstart af Strapi (`cms/src/ind
 
 | Område | Bestyrelsen kan |
 | --- | --- |
-| Nyheder og sider | Oprette, læse, rette, publicere og afpublicere. Ikke slette |
-| Links | Oprette, læse, rette og slette (links har ingen kladde) |
+| Nyheder og sider | Oprette, læse, rette, slette, publicere og afpublicere, også andres |
+| Links | Oprette, læse, rette og slette, også andres (links har ingen kladde) |
 | Mediebibliotek | Uploade, rette alt-tekst, hente og kopiere link. Ikke slette |
 | Brugere | Invitere og rette brugere, men kun med rollen Bestyrelse og ikke Super Admins |
 | Alt andet | Ingen adgang: Settings, roller, API-tokens, webhooks, User-samlingen (slutbrugere) m.m. |
@@ -65,9 +65,20 @@ Uploads er begrænset til billeder og PDF, og Strapis telemetri er slået fra.
 **Glemt adgangskode** er spærret i Caddy, fordi der ikke er sat e-mail op. Den, der har
 glemt sin adgangskode, beder en Super Admin om at sætte en ny under **Settings → Users**.
 
-**Udseende i admin** (`cms/src/admin/app.tsx`): klitrose-farver, logo, danske tekster på
+**Udseende i admin** (`cms/src/admin/app.tsx`): petrol-farver, logo, danske tekster på
 login-siden og ingen Strapi-tutorials. Logoet i `cms/src/admin/extensions/logo.svg` er
 midlertidigt og skal skiftes til det rigtige, når det kommer.
+
+## Indholdsmodel
+
+Koden er på engelsk; bestyrelsen ser danske navne og feltlabels i admin
+(sættes i `cms/src/index.ts`).
+
+| Indholdstype (admin) | Model / API | Felter |
+| --- | --- | --- |
+| Nyhed | `api::article.article`, `/api/articles` | title, slug, excerpt, body, image |
+| Side | `api::page.page`, `/api/pages` | title, slug, body, sortOrder |
+| Link | `api::link.link`, `/api/links` | title, url, description, sortOrder |
 
 ## Forhåndsvisning
 
@@ -125,8 +136,9 @@ slutbruger-login. Strapis admin-brugerflade testes ikke.
 
 - Arbejd på `dev` (eller feature-branches) og lav en pull request til `main`.
 - **Pull request til `main`:** GitHub Actions bygger images og kører Playwright-testene.
-- **Merge/push til `main`:** byg, test, push de testede images til GHCR
-  (`ghcr.io/94nord/feriehus1983-cms|web:<commit-SHA>`) og deploy til Hetzner.
+- **Merge/push til `main`:** byg, test og push de testede images til GHCR
+  (`ghcr.io/94nord/feriehus1983-cms|web:<commit-SHA>`). Deploy til Hetzner er
+  udkommenteret i `.github/workflows/ci.yml`, indtil serveren er sat op.
 
 Deployet på serveren (`scripts/deploy.sh`) tager backup, sætter `IMAGE_TAG` i `.env`,
 henter de nye images, starter dem og ruller tilbage til forrige version, hvis
@@ -134,7 +146,7 @@ forsiden ikke svarer. En tilbagerulning gendanner ikke databasen; brug backuppen
 hvis en ændring af datamodellen skal fortrydes.
 
 Anbefalet i GitHub under **Settings → Branches**: beskyt `main`, kræv pull request
-og at jobbet "Byg og test" er grønt.
+og at jobbet "Build and test" er grønt.
 
 ### Opsætning af serveren (én gang)
 

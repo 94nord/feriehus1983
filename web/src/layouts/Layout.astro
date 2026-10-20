@@ -7,13 +7,16 @@ import '../styles/layout.css';
 import '../styles/components.css';
 
 interface Props {
-  titel?: string;
-  beskrivelse?: string;
+  title?: string;
+  description?: string;
+  // On mobile the list and the content are separate pages:
+  // "list" shows only the news list, "detail" only the content
+  view?: 'list' | 'detail';
 }
 
-const foreningsnavn = 'Feriehusforeningen af 1983';
-const { titel, beskrivelse = `Nyheder og nyttige links fra ${foreningsnavn}.` } = Astro.props;
-const sti = Astro.url.pathname;
+const siteName = 'Feriehusforeningen af 1983';
+const { title, description = `Nyheder og nyttige links fra ${siteName}.`, view = 'detail' } = Astro.props;
+const path = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -21,37 +24,44 @@ const sti = Astro.url.pathname;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={beskrivelse} />
+    <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>{titel ? `${titel} · ${foreningsnavn}` : foreningsnavn}</title>
+    <title>{title ? `${title} · ${siteName}` : siteName}</title>
   </head>
   <body>
-    <a class="spring-over" href="#indhold">Spring til indhold</a>
+    <a class="skip-link" href={view === 'list' ? '#news-list' : '#content'}>Spring til indhold</a>
     <header class="site-header">
       <div class="container site-header-inner">
-        <a class="site-titel" href="/">
+        <a class="site-title" href="/">
           <span class="logo-placeholder" aria-hidden="true"></span>
-          <span class="site-titel-navn">{foreningsnavn}</span>
+          <span class="site-title-name">{siteName}</span>
         </a>
         <nav class="site-nav" aria-label="Hovedmenu">
-          <a href="/" aria-current={sti === '/' || sti.startsWith('/nyheder') ? 'page' : undefined}>Nyheder</a>
-          <a href="/information" aria-current={sti.startsWith('/information') ? 'page' : undefined}>Information</a>
-          <a href="/links" aria-current={sti === '/links' ? 'page' : undefined}>Nyttige links</a>
+          <a href="/" aria-current={path === '/' || path.startsWith('/nyheder') ? 'page' : undefined}>Nyheder</a>
+          <a href="/information" aria-current={path.startsWith('/information') ? 'page' : undefined}>Information</a>
+          <a href="/links" aria-current={path === '/links' ? 'page' : undefined}>Nyttige links</a>
         </nav>
       </div>
     </header>
-    <div class="container side-grid">
-      <main id="indhold" class="side-indhold">
+    <div class="container page-grid" data-view={view}>
+      <main id="content" class="page-content" tabindex="0">
         <slot />
       </main>
-      <aside class="side-aside">
+      <aside id="news-list" class="page-aside" tabindex="-1">
         <slot name="aside" />
       </aside>
     </div>
     <footer class="site-footer">
       <div class="container">
-        <p>{foreningsnavn}</p>
+        <p>{siteName}</p>
       </div>
     </footer>
+    <script is:inline>
+      // On desktop the list of articles scrolls on its own; keep the open article in view.
+      // On mobile the list sits below the article, so the page is left alone.
+      if (matchMedia('(min-width: 769px)').matches) {
+        document.querySelector('.news-list [aria-current="page"]')?.scrollIntoView({ block: 'center' });
+      }
+    </script>
   </body>
 </html>

@@ -1,47 +1,47 @@
 import { MEDIA_URL, STRAPI_CACHE_SECONDS, STRAPI_TOKEN, STRAPI_URL } from 'astro:env/server';
 
-export const NYHEDER_PR_SIDE = 10;
+export const ARTICLES_PER_PAGE = 10;
 const CACHE_MS = STRAPI_CACHE_SECONDS * 1000;
 
-export interface BilledeFormat {
+export interface ImageFormat {
   url: string;
   width: number;
   height: number;
 }
 
-export interface Billede {
+export interface Image {
   url: string;
   alternativeText: string | null;
   width: number;
   height: number;
-  formats: Record<string, BilledeFormat> | null;
+  formats: Record<string, ImageFormat> | null;
 }
 
-export interface Nyhed {
+export interface Article {
   documentId: string;
-  titel: string;
+  title: string;
   slug: string;
-  uddrag: string;
-  indhold?: Block[];
-  billede: Billede | null;
+  excerpt: string | null;
+  body?: Block[];
+  image: Image | null;
   publishedAt: string;
 }
 
 export interface Link {
   documentId: string;
-  titel: string;
+  title: string;
   url: string;
-  beskrivelse: string | null;
+  description: string | null;
 }
 
-export interface Side {
+export interface Page {
   documentId: string;
-  titel: string;
+  title: string;
   slug: string;
-  indhold?: Block[];
+  body?: Block[];
 }
 
-export interface TekstNode {
+export interface TextNode {
   type: 'text';
   text: string;
   bold?: boolean;
@@ -54,144 +54,146 @@ export interface TekstNode {
 export interface LinkNode {
   type: 'link';
   url: string;
-  children: TekstNode[];
+  children: TextNode[];
 }
 
-export type InlineNode = TekstNode | LinkNode;
+export type InlineNode = TextNode | LinkNode;
 
 export type Block =
   | { type: 'paragraph'; children: InlineNode[] }
   | { type: 'heading'; level: 1 | 2 | 3 | 4 | 5 | 6; children: InlineNode[] }
   | { type: 'quote'; children: InlineNode[] }
-  | { type: 'code'; children: TekstNode[] }
-  | { type: 'list'; format: 'ordered' | 'unordered'; children: ListeElement[] }
-  | { type: 'image'; image: Billede };
+  | { type: 'code'; children: TextNode[] }
+  | { type: 'list'; format: 'ordered' | 'unordered'; children: ListElement[] }
+  | { type: 'image'; image: Image };
 
-export type ListeElement =
+export type ListElement =
   | { type: 'list-item'; children: InlineNode[] }
-  | { type: 'list'; format: 'ordered' | 'unordered'; children: ListeElement[] };
+  | { type: 'list'; format: 'ordered' | 'unordered'; children: ListElement[] };
 
-interface Svar<T> {
+interface Response<T> {
   data: T;
   meta: { pagination?: { page: number; pageSize: number; pageCount: number; total: number } };
 }
 
-const cache = new Map<string, { udloeber: number; data: unknown }>();
+const cache = new Map<string, { expires: number; data: unknown }>();
 
-async function hent<T>(sti: string, { brugCache = true } = {}): Promise<Svar<T>> {
-  const gemt = brugCache ? cache.get(sti) : undefined;
-  if (gemt && gemt.udloeber > Date.now()) return gemt.data as Svar<T>;
+async function request<T>(path: string, { useCache = true } = {}): Promise<Response<T>> {
+  const cached = useCache ? cache.get(path) : undefined;
+  if (cached && cached.expires > Date.now()) return cached.data as Response<T>;
 
-  const res = await fetch(`${STRAPI_URL}${sti}`, {
+  const res = await fetch(`${STRAPI_URL}${path}`, {
     headers: STRAPI_TOKEN ? { Authorization: `Bearer ${STRAPI_TOKEN}` } : {},
   });
-  if (!res.ok) throw new Error(`Strapi svarede ${res.status} på ${sti}`);
+  if (!res.ok) throw new Error(`Strapi responded ${res.status} for ${path}`);
 
-  const data = (await res.json()) as Svar<T>;
-  if (brugCache) cache.set(sti, { udloeber: Date.now() + CACHE_MS, data });
+  const data = (await res.json()) as Response<T>;
+  if (useCache) cache.set(path, { expires: Date.now() + CACHE_MS, data });
   return data;
 }
 
-export async function hentNyheder(side: number) {
+export async function getArticles(page: number) {
   const params = new URLSearchParams({
     sort: 'publishedAt:desc',
-    'pagination[page]': String(side),
-    'pagination[pageSize]': String(NYHEDER_PR_SIDE),
-    'fields[0]': 'titel',
+    'pagination[page]': String(page),
+    'pagination[pageSize]': String(ARTICLES_PER_PAGE),
+    'fields[0]': 'title',
     'fields[1]': 'slug',
-    'fields[2]': 'uddrag',
+    'fields[2]': 'excerpt',
     'fields[3]': 'publishedAt',
   });
-  const svar = await hent<Nyhed[]>(`/api/nyheder?${params}`);
+  const res = await request<Article[]>(`/api/articles?${params}`);
   return {
-    nyheder: svar.data,
-    antalSider: svar.meta.pagination?.pageCount ?? 1,
+    articles: res.data,
+    pageCount: res.meta.pagination?.pageCount ?? 1,
   };
 }
 
-export async function hentNyhed(slug: string) {
+export async function getArticle(slug: string) {
   const params = new URLSearchParams({
     'filters[slug][$eq]': slug,
-    populate: 'billede',
+    populate: 'image',
   });
-  const svar = await hent<Nyhed[]>(`/api/nyheder?${params}`);
-  return svar.data[0] ?? null;
+  const res = await request<Article[]>(`/api/articles?${params}`);
+  return res.data[0] ?? null;
 }
 
-export async function hentSenesteNyhed() {
+export async function getLatestArticle() {
   const params = new URLSearchParams({
     sort: 'publishedAt:desc',
     'pagination[pageSize]': '1',
-    populate: 'billede',
+    populate: 'image',
   });
-  const svar = await hent<Nyhed[]>(`/api/nyheder?${params}`);
-  return svar.data[0] ?? null;
+  const res = await request<Article[]>(`/api/articles?${params}`);
+  return res.data[0] ?? null;
 }
 
-export async function hentLinks() {
+export async function getLinks() {
   const params = new URLSearchParams({
-    sort: 'sortering:asc',
+    sort: 'sortOrder:asc',
     'pagination[pageSize]': '100',
   });
-  const svar = await hent<Link[]>(`/api/links?${params}`);
-  return svar.data;
+  const res = await request<Link[]>(`/api/links?${params}`);
+  return res.data;
 }
 
-export async function hentSider() {
+export async function getPages() {
   const params = new URLSearchParams({
-    sort: 'sortering:asc',
+    sort: 'sortOrder:asc',
     'pagination[pageSize]': '100',
-    'fields[0]': 'titel',
+    'fields[0]': 'title',
     'fields[1]': 'slug',
   });
-  const svar = await hent<Side[]>(`/api/sider?${params}`);
-  return svar.data;
+  const res = await request<Page[]>(`/api/pages?${params}`);
+  return res.data;
 }
 
-export async function hentSide(slug: string) {
+export async function getPage(slug: string) {
   const params = new URLSearchParams({ 'filters[slug][$eq]': slug });
-  const svar = await hent<Side[]>(`/api/sider?${params}`);
-  return svar.data[0] ?? null;
+  const res = await request<Page[]>(`/api/pages?${params}`);
+  return res.data[0] ?? null;
 }
 
-export type PreviewType = 'nyhed' | 'side';
+export type PreviewType = 'article' | 'page';
 
-// Forhåndsvisning: henter en nyhed eller side (også kladder) direkte, uden cache
-export async function hentTilPreview(type: PreviewType, documentId: string, status: 'draft' | 'published') {
-  const sti = type === 'nyhed' ? 'nyheder' : 'sider';
+// Preview: fetches an article or page (drafts included) directly, without cache
+export async function getPreview(type: PreviewType, documentId: string, status: 'draft' | 'published') {
+  const collection = type === 'article' ? 'articles' : 'pages';
   const params = new URLSearchParams({ status });
-  if (type === 'nyhed') params.set('populate', 'billede');
+  if (type === 'article') params.set('populate', 'image');
   try {
-    const svar = await hent<Nyhed | Side>(`/api/${sti}/${encodeURIComponent(documentId)}?${params}`, { brugCache: false });
-    return svar.data;
+    const res = await request<Article | Page>(`/api/${collection}/${encodeURIComponent(documentId)}?${params}`, {
+      useCache: false,
+    });
+    return res.data;
   } catch (e) {
-    if (e instanceof Error && e.message.includes('svarede 404')) return null;
+    if (e instanceof Error && e.message.includes('responded 404')) return null;
     throw e;
   }
 }
 
-export function medieUrl(url: string) {
+export function mediaUrl(url: string) {
   return url.startsWith('http') ? url : `${MEDIA_URL}${url}`;
 }
 
-// Strapis genererede størrelser; originalen sendes kun, hvis der ikke er nogen
-function billedeStoerrelser(billede: Billede): BilledeFormat[] {
-  const formater = Object.values(billede.formats ?? {});
-  return (formater.length > 0 ? formater : [billede]).sort((a, b) => a.width - b.width);
+// Strapi's generated sizes; the original is only sent if there are none
+function imageSizes(image: Image): ImageFormat[] {
+  const formats = Object.values(image.formats ?? {});
+  return (formats.length > 0 ? formats : [image]).sort((a, b) => a.width - b.width);
 }
 
-export function billedeSrc(billede: Billede) {
-  return medieUrl(billedeStoerrelser(billede).at(-1)!.url);
+export function imageSrc(image: Image) {
+  return mediaUrl(imageSizes(image).at(-1)!.url);
 }
 
-export function billedeSrcset(billede: Billede) {
-  return billedeStoerrelser(billede)
-    .map((f) => `${medieUrl(f.url)} ${f.width}w`)
+export function imageSrcset(image: Image) {
+  return imageSizes(image)
+    .map((f) => `${mediaUrl(f.url)} ${f.width}w`)
     .join(', ');
 }
 
-const datoFormat = new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'long', year: 'numeric' });
+const dateFormat = new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'long', year: 'numeric' });
 
-export function formaterDato(iso: string) {
-  return datoFormat.format(new Date(iso));
+export function formatDate(iso: string) {
+  return dateFormat.format(new Date(iso));
 }

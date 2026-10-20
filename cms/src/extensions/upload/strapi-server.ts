@@ -2,47 +2,47 @@ import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 
-// Originaler skaleres ned til højst denne bredde/højde ved upload
-const MAKS_STOERRELSE = 2400;
-const KVALITET = 80;
-const FORMATER = ['jpeg', 'png', 'webp', 'tiff', 'avif'] as const;
-type Format = (typeof FORMATER)[number];
+// Originals are scaled down to at most this width/height on upload
+const MAX_SIZE = 2400;
+const QUALITY = 80;
+const FORMATS = ['jpeg', 'png', 'webp', 'tiff', 'avif'] as const;
+type Format = (typeof FORMATS)[number];
 
-interface UploadFil {
+interface UploadFile {
   hash: string;
   filepath?: string;
   tmpWorkingDirectory?: string;
   getStream: () => fs.ReadStream;
-  [noegle: string]: unknown;
+  [key: string]: unknown;
 }
 
 /**
- * Erstatter Strapis optimize, som kører på originalen ved hver upload:
- * - drejer billedet efter EXIF-orienteringen
- * - skalerer ned til MAKS_STOERRELSE (aldrig op)
- * - genkoder, så EXIF/GPS og andre metadata fjernes (sharp beholder dem ikke)
- * Resultatet bruges altid, også hvis filen bliver større, så metadata aldrig gemmes.
+ * Replaces Strapi's optimize, which runs on the original on every upload:
+ * - rotates the image according to its EXIF orientation
+ * - scales down to MAX_SIZE (never up)
+ * - re-encodes so EXIF/GPS and other metadata are removed (sharp does not keep them)
+ * The result is always used, even if the file gets larger, so metadata is never stored.
  */
-async function optimize(fil: UploadFil, original: (f: UploadFil) => Promise<UploadFil>) {
-  if (!fil.filepath) return original(fil);
+async function optimize(file: UploadFile, original: (f: UploadFile) => Promise<UploadFile>) {
+  if (!file.filepath) return original(file);
 
-  const { format } = await sharp(fil.filepath).metadata();
-  if (!format || !FORMATER.includes(format as Format)) return original(fil);
+  const { format } = await sharp(file.filepath).metadata();
+  if (!format || !FORMATS.includes(format as Format)) return original(file);
 
-  const ud = path.join(fil.tmpWorkingDirectory ?? path.dirname(fil.filepath), `optimized-${fil.hash}`);
-  const billede = sharp(fil.filepath)
+  const output = path.join(file.tmpWorkingDirectory ?? path.dirname(file.filepath), `optimized-${file.hash}`);
+  const image = sharp(file.filepath)
     .rotate()
-    .resize({ width: MAKS_STOERRELSE, height: MAKS_STOERRELSE, fit: 'inside', withoutEnlargement: true });
+    .resize({ width: MAX_SIZE, height: MAX_SIZE, fit: 'inside', withoutEnlargement: true });
 
-  if (format === 'png') billede.png({ compressionLevel: 9 });
-  else billede[format as Exclude<Format, 'png'>]({ quality: KVALITET });
+  if (format === 'png') image.png({ compressionLevel: 9 });
+  else image[format as Exclude<Format, 'png'>]({ quality: QUALITY });
 
-  const info = await billede.toFile(ud);
+  const info = await image.toFile(output);
 
   return {
-    ...fil,
-    filepath: ud,
-    getStream: () => fs.createReadStream(ud),
+    ...file,
+    filepath: output,
+    getStream: () => fs.createReadStream(output),
     width: info.width,
     height: info.height,
     size: info.size / 1000,
@@ -53,15 +53,15 @@ async function optimize(fil: UploadFil, original: (f: UploadFil) => Promise<Uplo
 export default (plugin: { services: Record<string, unknown> }) => {
   const service = plugin.services['image-manipulation'];
 
-  const udvid = (s: Record<string, unknown>) => {
-    const original = s.optimize as (f: UploadFil) => Promise<UploadFil>;
-    return { ...s, optimize: (fil: UploadFil) => optimize(fil, original) };
+  const extend = (s: Record<string, unknown>) => {
+    const original = s.optimize as (f: UploadFile) => Promise<UploadFile>;
+    return { ...s, optimize: (file: UploadFile) => optimize(file, original) };
   };
 
   plugin.services['image-manipulation'] =
     typeof service === 'function'
-      ? (...args: unknown[]) => udvid((service as (...a: unknown[]) => Record<string, unknown>)(...args))
-      : udvid(service as Record<string, unknown>);
+      ? (...args: unknown[]) => extend((service as (...a: unknown[]) => Record<string, unknown>)(...args))
+      : extend(service as Record<string, unknown>);
 
   return plugin;
 };

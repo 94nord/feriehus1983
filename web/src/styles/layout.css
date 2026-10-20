@@ -1,36 +1,124 @@
 .container {
   width: 100%;
-  max-width: var(--bredde-max);
+  max-width: var(--width-max);
   margin: 0 auto;
-  padding: 0 var(--afstand-m);
+  padding: 0 var(--space-m);
 }
 
-.side-grid {
+.page-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: var(--bredde-aside) minmax(0, 1fr);
-  grid-template-areas: "aside indhold";
-  gap: var(--afstand-xl);
-  padding-top: var(--afstand-l);
-  padding-bottom: var(--afstand-xl);
+  grid-template-columns: var(--width-aside) minmax(0, 1fr);
+  grid-template-areas: "aside content";
+  gap: var(--space-xl);
+  padding-top: var(--space-l);
 }
 
-.side-indhold {
-  grid-area: indhold;
+.page-content {
+  grid-area: content;
   min-width: 0;
 }
 
-.side-aside {
+.page-aside {
   grid-area: aside;
   min-width: 0;
 }
 
 @media (max-width: 768px) {
-  .side-grid {
+  .page-grid {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      "indhold"
+      "content"
       "aside";
-    gap: var(--afstand-xl);
+    gap: var(--space-xl);
+    padding-bottom: var(--space-xl);
+  }
+
+  /* Separate pages on mobile: the front page shows the list, other pages the content */
+  .page-grid[data-view="list"] .page-content,
+  .page-grid[data-view="detail"] .page-aside {
+    display: none;
+  }
+
+  .page-grid[data-view="list"] {
+    grid-template-areas: "aside";
+  }
+
+  .page-grid[data-view="detail"] {
+    grid-template-areas: "content";
+  }
+
+  /* No article is open next to the list on mobile, so nothing is marked as active */
+  .page-grid[data-view="list"] .news-list a[aria-current="page"] {
+    background: none;
+  }
+
+  .page-grid[data-view="list"] .news-list a[aria-current="page"] .news-list-title {
+    color: inherit;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none;
+  }
+}
+
+/* Desktop: the page itself does not scroll. The article and the list of articles
+   scroll independently between the header and footer bands; the "Nyheder"
+   heading and the pagination stay in place. */
+@media (min-width: 769px) {
+  body {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .page-grid {
+    min-height: 0;
+    padding-top: 0;
+  }
+
+  .page-content,
+  .news-list ol {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  .page-content {
+    padding-top: var(--space-l);
+    padding-bottom: var(--space-xl);
+  }
+
+  .page-content:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .page-aside {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* Only scrolls as a whole if the window is too low for the list's minimum height */
+    overflow-y: auto;
+    padding-top: var(--space-l);
+    padding-bottom: var(--space-m);
+  }
+
+  .page-aside > .news-list {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+  }
+
+  /* The list fills the column so the pagination sits at the bottom, but never
+     shrinks below a usable height */
+  .news-list ol {
+    flex: 1 1 16rem;
+    min-height: 16rem;
+    scrollbar-gutter: stable;
   }
 }

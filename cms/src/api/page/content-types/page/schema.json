@@ -1,31 +1,31 @@
 {
   "kind": "collectionType",
-  "collectionName": "sider",
+  "collectionName": "pages",
   "info": {
-    "singularName": "side",
-    "pluralName": "sider",
+    "singularName": "page",
+    "pluralName": "pages",
     "displayName": "Side",
-    "description": "Faste sider under Information"
+    "description": "Static pages under Information"
   },
   "options": {
     "draftAndPublish": true
   },
   "attributes": {
-    "titel": {
+    "title": {
       "type": "string",
       "required": true,
       "maxLength": 120
     },
     "slug": {
       "type": "uid",
-      "targetField": "titel",
+      "targetField": "title",
       "required": true
     },
-    "indhold": {
+    "body": {
       "type": "blocks",
       "required": true
     },
-    "sortering": {
+    "sortOrder": {
       "type": "integer",
       "default": 0
     }

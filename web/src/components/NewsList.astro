@@ -1,0 +1,65 @@
+---
+import { formatDate, getArticles } from '../lib/strapi';
+
+interface Props {
+  page: number;
+  activeSlug?: string;
+  // h1 on the front page, where the list is the page's main content on mobile
+  headingLevel?: 1 | 2;
+  // Paging normally keeps the open article; on the front page it stays on the list
+  pageWithArticle?: boolean;
+}
+
+const { page, activeSlug, headingLevel = 2, pageWithArticle = true } = Astro.props;
+const Heading = `h${headingLevel}`;
+
+let result: Awaited<ReturnType<typeof getArticles>> | null = null;
+try {
+  result = await getArticles(page);
+} catch (error) {
+  console.error(error);
+}
+
+const pageParam = (n: number) => (n > 1 ? `?side=${n}` : '');
+const pageHref = (n: number) => `${pageWithArticle && activeSlug ? `/nyheder/${activeSlug}` : '/'}${pageParam(n)}`;
+---
+
+<nav class="news-list" aria-label="Nyheder">
+  <Heading class="news-list-heading">Nyheder</Heading>
+  {!result && <p class="notice">Nyhederne kunne ikke hentes lige nu.</p>}
+  {result && result.articles.length === 0 && page === 1 && <p class="notice">Der er ingen nyheder endnu.</p>}
+  {
+    result && result.articles.length === 0 && page > 1 && (
+      <p class="notice">
+        Der er ikke flere nyheder. <a href={pageHref(1)}>Gå til første side</a>.
+      </p>
+    )
+  }
+  {
+    result && result.articles.length > 0 && (
+      <ol>
+        {result.articles.map((article) => (
+          <li>
+            <a
+              href={`/nyheder/${article.slug}${pageParam(page)}`}
+              aria-current={article.slug === activeSlug ? 'page' : undefined}
+            >
+              <span class="news-list-title">{article.title}</span>
+              <time datetime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
+              {article.excerpt && <span class="news-list-excerpt">{article.excerpt}</span>}
+            </a>
+          </li>
+        ))}
+      </ol>
+    )
+  }
+  {
+    result && result.pageCount > 1 && (
+      <div class="pagination">
+        {page > 1 ? <a href={pageHref(page - 1)}><span aria-hidden="true">←&nbsp;</span>Forrige</a> : <span />}
+        <span class="pagination-status">Side {page} af {result.pageCount}</span>
+        {page < result.pageCount ? <a href={pageHref(page + 1)}>Næste<span aria-hidden="true">&nbsp;→</span></a> : <span />}
+      </div>
+    )
+  }
+</nav>

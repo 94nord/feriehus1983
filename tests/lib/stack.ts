@@ -2,8 +2,8 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const ROD = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-export const ENV_FIL = path.join(ROD, 'tests/.env.test');
+export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+export const ENV_FILE = path.join(ROOT, 'tests/.env.test');
 export const BASE_URL = 'http://localhost:8080';
 export const ADMIN_URL = 'http://admin.localhost:8080';
 
@@ -12,23 +12,23 @@ const COMPOSE = [
   '-p', 'feriehus1983-test',
   '-f', 'docker-compose.yml',
   '-f', 'docker-compose.test.yml',
-  '--env-file', ENV_FIL,
+  '--env-file', ENV_FILE,
 ];
 
 export function compose(...args: string[]) {
-  return execFileSync('docker', [...COMPOSE, ...args], { cwd: ROD, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
+  return execFileSync('docker', [...COMPOSE, ...args], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
 }
 
-export async function ventPaa(url: string, sekunder = 120) {
-  const slut = Date.now() + sekunder * 1000;
-  while (Date.now() < slut) {
+export async function waitFor(url: string, seconds = 120) {
+  const deadline = Date.now() + seconds * 1000;
+  while (Date.now() < deadline) {
     try {
       const res = await fetch(url);
       if (res.status < 500) return;
     } catch {
-      // ikke klar endnu
+      // not ready yet
     }
     await new Promise((r) => setTimeout(r, 1000));
   }
-  throw new Error(`${url} svarede ikke inden for ${sekunder} sekunder`);
+  throw new Error(`${url} did not respond within ${seconds} seconds`);
 }

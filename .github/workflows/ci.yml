@@ -1,6 +1,6 @@
-# Pull requests til main: byg og test.
-# Push til main: byg, test, push images til GHCR og deploy til Hetzner.
-name: CI og deploy
+# Pull requests to main: build and test.
+# Push to main: build, test and push images to GHCR (deploy to Hetzner is commented out below).
+name: CI and deploy
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # Afbryd gamle kørsler på pull requests, men aldrig en igangværende deploy
+  # Cancel old runs on pull requests, but never a deploy in progress
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
@@ -19,7 +19,7 @@ env:
 
 jobs:
   test:
-    name: Byg og test
+    name: Build and test
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -34,21 +34,21 @@ jobs:
           cache: npm
           cache-dependency-path: tests/package-lock.json
 
-      - name: admin.localhost peger på runneren
+      - name: Point admin.localhost at the runner
         run: echo "127.0.0.1 admin.localhost" | sudo tee -a /etc/hosts
 
-      - name: Installer Playwright
+      - name: Install Playwright
         working-directory: tests
         run: |
           npm ci
           npx playwright install --with-deps chromium
 
-      # Teststakken bygger images med tagget IMAGE_TAG, så de samme images pushes bagefter
-      - name: Kør tests
+      # The test stack builds images tagged IMAGE_TAG, so the same images are pushed afterwards
+      - name: Run tests
         working-directory: tests
         run: npm test
 
-      - name: Gem testrapport
+      - name: Save test report
         if: failure()
         uses: actions/upload-artifact@v7
         with:
@@ -56,7 +56,7 @@ jobs:
           path: tests/playwright-report
           retention-days: 14
 
-      - name: Log ind på GHCR
+      - name: Log in to GHCR
         if: github.event_name == 'push'
         uses: docker/login-action@v4
         with:
@@ -64,39 +64,40 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push testede images
+      - name: Push tested images
         if: github.event_name == 'push'
         run: |
           for image in feriehus1983-cms feriehus1983-web; do
             docker push "$REGISTRY/$image:$IMAGE_TAG"
           done
 
-  deploy:
-    name: Deploy til produktion
-    needs: test
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    environment: production
-    permissions:
-      contents: read
-    env:
-      DEPLOY_DIR: /srv/feriehus1983
-    steps:
-      - uses: actions/checkout@v7
+  # Deploy is disabled until the server is set up (see README). Uncomment to enable.
+  # deploy:
+  #   name: Deploy to production
+  #   needs: test
+  #   if: github.event_name == 'push'
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 15
+  #   environment: production
+  #   permissions:
+  #     contents: read
+  #   env:
+  #     DEPLOY_DIR: /srv/feriehus1983
+  #   steps:
+  #     - uses: actions/checkout@v7
 
-      - name: SSH-nøgle
-        run: |
-          install -m 700 -d ~/.ssh
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
-          chmod 600 ~/.ssh/deploy
-          echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+  #     - name: SSH key
+  #       run: |
+  #         install -m 700 -d ~/.ssh
+  #         echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
+  #         chmod 600 ~/.ssh/deploy
+  #         echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
 
-      - name: Kopiér konfiguration til serveren
-        run: |
-          scp -i ~/.ssh/deploy docker-compose.yml "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:$DEPLOY_DIR/"
-          scp -i ~/.ssh/deploy caddy/Caddyfile "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:$DEPLOY_DIR/caddy/"
-          scp -i ~/.ssh/deploy scripts/*.sh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:$DEPLOY_DIR/scripts/"
+  #     - name: Copy configuration to the server
+  #       run: |
+  #         scp -i ~/.ssh/deploy docker-compose.yml "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:$DEPLOY_DIR/"
+  #         scp -i ~/.ssh/deploy caddy/Caddyfile "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:$DEPLOY_DIR/caddy/"
+  #         scp -i ~/.ssh/deploy scripts/*.sh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:$DEPLOY_DIR/scripts/"
 
-      - name: Deploy
-        run: ssh -i ~/.ssh/deploy "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "$DEPLOY_DIR/scripts/deploy.sh $IMAGE_TAG"
+  #     - name: Deploy
+  #       run: ssh -i ~/.ssh/deploy "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "$DEPLOY_DIR/scripts/deploy.sh $IMAGE_TAG"

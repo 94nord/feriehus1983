@@ -1,39 +1,40 @@
 {
   "kind": "collectionType",
-  "collectionName": "nyheder",
+  "collectionName": "articles",
   "info": {
-    "singularName": "nyhed",
-    "pluralName": "nyheder",
+    "singularName": "article",
+    "pluralName": "articles",
     "displayName": "Nyhed",
-    "description": "Nyheder til forsiden"
+    "description": "News articles for the front page"
   },
   "options": {
     "draftAndPublish": true
   },
   "attributes": {
-    "titel": {
+    "title": {
       "type": "string",
       "required": true,
       "maxLength": 120
     },
     "slug": {
       "type": "uid",
-      "targetField": "titel",
+      "targetField": "title",
       "required": true
     },
-    "uddrag": {
+    "excerpt": {
       "type": "text",
-      "required": true,
       "maxLength": 200
     },
-    "indhold": {
+    "body": {
       "type": "blocks",
       "required": true
     },
-    "billede": {
+    "image": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     }
   }
 }
