@@ -1,0 +1,12 @@
+# Testudgave af stakken til Playwright. Bruges sammen med docker-compose.yml:
+#   docker compose -p feriehus1983-test -f docker-compose.yml -f docker-compose.test.yml --env-file tests/.env.test up
+# Kører på port 8080 med egne data i data-test/, så den ikke rører udviklingsdata.
+services:
+  caddy:
+    ports: !override
+      - "8080:8080"
+
+  cms:
+    volumes: !override
+      - ./data-test/db:/opt/app/data/db
+      - ./data-test/uploads:/opt/app/public/uploads

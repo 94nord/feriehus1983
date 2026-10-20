@@ -4,3 +4,7 @@ data/
 node_modules/
 dist/
 .DS_Store
+data-test/
+tests/.env.test
+tests/test-results/
+tests/playwright-report/

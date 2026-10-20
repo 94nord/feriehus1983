@@ -1,7 +1,7 @@
-import { MEDIA_URL, STRAPI_TOKEN, STRAPI_URL } from 'astro:env/server';
+import { MEDIA_URL, STRAPI_CACHE_SECONDS, STRAPI_TOKEN, STRAPI_URL } from 'astro:env/server';
 
 export const NYHEDER_PR_SIDE = 10;
-const CACHE_MS = 60_000;
+const CACHE_MS = STRAPI_CACHE_SECONDS * 1000;
 
 export interface BilledeFormat {
   url: string;

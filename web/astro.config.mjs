@@ -18,6 +18,8 @@ export default defineConfig({
       STRAPI_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
       // Prefix til billeder; tom bag Caddy, http://localhost:1337 ved npm run dev
       MEDIA_URL: envField.string({ context: 'server', access: 'secret', default: '' }),
+      // Hvor længe svar fra Strapi caches; 0 slår cachen fra (bruges i tests)
+      STRAPI_CACHE_SECONDS: envField.number({ context: 'server', access: 'secret', default: 60 }),
     },
   },
 });

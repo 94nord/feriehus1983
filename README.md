@@ -69,6 +69,26 @@ cd web
 STRAPI_URL=http://admin.localhost STRAPI_TOKEN=<token> MEDIA_URL=http://localhost npm run dev
 ```
 
+## Tests
+
+Playwright-tests af hjemmesiden ligger i `tests/`. De starter en separat teststak
+(`feriehus1983-test`) på port 8080 med egne data i `data-test/`, så udviklingsdata ikke røres.
+
+```bash
+cd tests
+npm install
+npx playwright install chromium
+npm test
+```
+
+Testene opretter selv en admin, et læsetoken og testindhold, og rydder op bagefter.
+`KEEP_STACK=1 npm test` lader teststakken køre (`http://localhost:8080`).
+Rapporten ses med `npm run report`.
+
+De dækker nyhedsliste, bladring, nyhedssider, billeder, faste sider, links, kladder,
+404, grundlæggende tilgængelighed på desktop og mobil, og at Caddy spærrer
+slutbruger-login. Strapis admin-brugerflade testes ikke.
+
 ## Deploy til Hetzner
 
 1. Server med Docker, firewall åben for 22, 80 og 443, kun SSH-nøgler.
