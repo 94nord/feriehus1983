@@ -1,14 +1,18 @@
 .container {
+  width: 100%;
   max-width: var(--bredde-max);
   margin: 0 auto;
   padding: 0 var(--afstand-m);
 }
 
 .side-grid {
+  flex: 1;
   display: grid;
-  grid-template-columns: var(--bredde-aside) 1fr;
+  grid-template-columns: var(--bredde-aside) minmax(0, 1fr);
   grid-template-areas: "aside indhold";
-  gap: var(--afstand-l);
+  gap: var(--afstand-xl);
+  padding-top: var(--afstand-l);
+  padding-bottom: var(--afstand-xl);
 }
 
 .side-indhold {
@@ -18,13 +22,15 @@
 
 .side-aside {
   grid-area: aside;
+  min-width: 0;
 }
 
 @media (max-width: 768px) {
   .side-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
       "indhold"
       "aside";
+    gap: var(--afstand-xl);
   }
 }

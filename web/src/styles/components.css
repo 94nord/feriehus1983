@@ -1,54 +1,316 @@
+/* Spring til indhold */
 .spring-over {
   position: absolute;
+  top: var(--afstand-s);
   left: -100vw;
+  padding: var(--afstand-s) var(--afstand-m);
+  border-radius: var(--rundt-lille);
+  background: var(--farve-klitrose);
+  color: var(--farve-baggrund);
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .spring-over:focus {
   left: var(--afstand-m);
 }
 
+.spring-over:hover {
+  color: var(--farve-baggrund);
+}
+
+/* Sidehoved */
 .site-header {
+  border-top: 4px solid var(--farve-klitrose);
   border-bottom: var(--kant);
 }
 
 .site-header-inner {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--afstand-m);
+  gap: var(--afstand-s) var(--afstand-l);
   padding-top: var(--afstand-m);
   padding-bottom: var(--afstand-m);
 }
 
-.site-nav {
-  display: flex;
-  gap: var(--afstand-m);
+.site-titel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--tekst-broed);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--farve-tekst);
+  text-decoration: none;
 }
 
+.site-titel:hover {
+  color: var(--farve-tekst);
+}
+
+.site-titel:hover .site-titel-navn {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+/* Midlertidig plads til logoet, indtil /logo.svg findes */
+.logo-placeholder {
+  flex: none;
+  width: var(--logo-stoerrelse);
+  height: var(--logo-stoerrelse);
+  border: var(--kant);
+  border-radius: var(--rundt-lille);
+  background: var(--farve-flade);
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--afstand-l);
+}
+
+.site-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--tekst-navigation);
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--farve-tekst);
+  text-decoration-line: none;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+}
+
+.site-nav a:hover {
+  color: var(--farve-tekst);
+  text-decoration-line: underline;
+}
+
+.site-nav a[aria-current="page"] {
+  color: var(--farve-klitrose);
+  text-decoration-line: underline;
+  text-decoration-color: var(--farve-klitrose);
+}
+
+/* Sidefod */
 .site-footer {
   border-top: var(--kant);
-  padding: var(--afstand-m) 0;
+  background: var(--farve-flade);
+  padding: var(--afstand-l) 0;
+  font-size: var(--tekst-metadata);
+  line-height: 1.45;
+  color: var(--farve-daempet);
+}
+
+/* Beskeder: tomme tilstande og fejl */
+.besked {
+  max-width: var(--linjelaengde);
+  padding: var(--afstand-m) 1.25rem;
+  border: var(--kant);
+  border-radius: var(--rundt-mellem);
+  background: var(--farve-flade);
+}
+
+/* Artikel og faste sider */
+.artikel {
+  max-width: var(--linjelaengde);
+}
+
+.artikel > * + * {
+  margin-top: 1.25rem;
+}
+
+.artikel > header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--afstand-s);
+  margin-bottom: var(--afstand-l);
+}
+
+.artikel > :is(h2, h3, h4, h5, h6) {
+  margin-top: var(--afstand-l);
+}
+
+.artikel > :is(h2, h3, h4, h5, h6) + * {
+  margin-top: var(--afstand-s);
+}
+
+.artikel figure {
+  margin: var(--afstand-l) 0;
+}
+
+.artikel figure img {
+  display: block;
+  border-radius: var(--rundt-lille);
+}
+
+.artikel :is(ul, ol) {
+  padding-left: 1.5rem;
+}
+
+.artikel li + li {
+  margin-top: var(--afstand-s);
+}
+
+.artikel li::marker {
+  color: var(--farve-daempet);
+}
+
+.artikel blockquote {
+  position: relative;
+  margin: var(--afstand-l) 0;
+  padding-left: 1.5rem;
+  font-size: var(--tekst-underoverskrift);
+  line-height: 1.45;
+}
+
+.artikel blockquote::before {
+  content: "„";
+  position: absolute;
+  left: -0.1em;
+  top: -0.55em;
+  font-size: 2.5em;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--farve-klitrose);
+}
+
+.artikel pre {
+  overflow-x: auto;
+  padding: var(--afstand-m);
+  border-radius: var(--rundt-mellem);
+  background: var(--farve-flade);
+  font-size: var(--tekst-metadata);
+}
+
+.tilbage {
+  margin-bottom: var(--afstand-m);
+  font-size: var(--tekst-metadata);
+}
+
+/* Nyhedsliste i sidekolonnen */
+.nyhedsliste h2 {
+  margin-bottom: var(--afstand-m);
 }
 
 .nyhedsliste ol {
   list-style: none;
+  margin: 0;
   padding: 0;
 }
 
 .nyhedsliste li {
-  padding: var(--afstand-s) 0;
   border-bottom: var(--kant);
+}
+
+.nyhedsliste li:first-child {
+  border-top: var(--kant);
 }
 
 .nyhedsliste a {
   display: flex;
   flex-direction: column;
+  gap: var(--afstand-xs);
+  margin: 1px 0;
+  padding: 0.75rem;
+  border-radius: var(--rundt-lille);
+  color: var(--farve-tekst);
+  text-decoration: none;
+}
+
+.nyhedsliste a:hover {
+  color: var(--farve-tekst);
+}
+
+.nyhedsliste-titel {
+  font-size: var(--tekst-liste-titel);
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+.nyhedsliste a:hover .nyhedsliste-titel {
+  text-decoration-line: underline;
+}
+
+.nyhedsliste-uddrag {
+  font-size: var(--tekst-metadata);
+  line-height: 1.45;
+  color: var(--farve-daempet);
 }
 
 .nyhedsliste a[aria-current="page"] {
-  font-weight: bold;
+  background: var(--farve-klitrose-lys);
+}
+
+.nyhedsliste a[aria-current="page"] .nyhedsliste-titel {
+  font-weight: 700;
+  color: var(--farve-klitrose-dyb);
+}
+
+.nyhedsliste .besked {
+  font-size: var(--tekst-metadata);
 }
 
 .pagination {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--afstand-s);
+  margin-top: var(--afstand-m);
+  font-size: var(--tekst-metadata);
+}
+
+.pagination a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.pagination > :last-child {
+  justify-self: end;
+}
+
+.pagination-status {
+  color: var(--farve-daempet);
+}
+
+/* Link- og sidelister */
+:is(.linkliste, .sideliste) {
+  list-style: none;
+  max-width: var(--linjelaengde);
+  margin: var(--afstand-l) 0 0;
+  padding: 0;
+}
+
+:is(.linkliste, .sideliste) li {
+  padding: var(--afstand-m) 0;
+  border-bottom: var(--kant);
+}
+
+:is(.linkliste, .sideliste) li:first-child {
+  border-top: var(--kant);
+}
+
+:is(.linkliste, .sideliste) a {
+  font-size: var(--tekst-liste-titel);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.linkliste p {
+  margin-top: var(--afstand-xs);
+}
+
+.side-indhold > h1 + .besked {
+  margin-top: var(--afstand-l);
+}
+
+.side-indhold > h1 + p {
+  margin-top: var(--afstand-m);
 }

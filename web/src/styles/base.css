@@ -6,22 +6,54 @@
 
 html {
   font-size: var(--rod-stoerrelse);
-}
-
-@media (max-width: 400px) {
-  html {
-    font-size: var(--rod-stoerrelse-lille);
-  }
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   font-family: var(--font);
-  line-height: 1.5;
+  font-size: var(--tekst-broed);
+  line-height: 1.6;
   color: var(--farve-tekst);
+  background: var(--farve-baggrund);
 }
 
 img {
   max-width: 100%;
   height: auto;
+}
+
+a {
+  color: var(--farve-klitrose);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-skip-ink: auto;
+  transition:
+    color var(--overgang),
+    text-decoration-color var(--overgang),
+    background-color var(--overgang);
+}
+
+a:hover {
+  color: var(--farve-klitrose-dyb);
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--farve-klitrose);
+  outline-offset: 2px;
+  border-radius: var(--rundt-lille);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0s !important;
+  }
 }

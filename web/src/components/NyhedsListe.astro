@@ -52,9 +52,9 @@ const sideHref = (n: number) => `${aktivSlug ? `/nyheder/${aktivSlug}` : '/'}${s
   {
     resultat && resultat.antalSider > 1 && (
       <div class="pagination">
-        {side > 1 ? <a href={sideHref(side - 1)}>Forrige</a> : <span />}
-        <span>Side {side} af {resultat.antalSider}</span>
-        {side < resultat.antalSider ? <a href={sideHref(side + 1)}>Næste</a> : <span />}
+        {side > 1 ? <a href={sideHref(side - 1)}><span aria-hidden="true">←&nbsp;</span>Forrige</a> : <span />}
+        <span class="pagination-status">Side {side} af {resultat.antalSider}</span>
+        {side < resultat.antalSider ? <a href={sideHref(side + 1)}>Næste<span aria-hidden="true">&nbsp;→</span></a> : <span />}
       </div>
     )
   }

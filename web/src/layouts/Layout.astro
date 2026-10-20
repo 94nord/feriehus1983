@@ -1,4 +1,5 @@
 ---
+import '@fontsource-variable/atkinson-hyperlegible-next';
 import '../styles/tokens.css';
 import '../styles/base.css';
 import '../styles/typography.css';
@@ -28,7 +29,10 @@ const sti = Astro.url.pathname;
     <a class="spring-over" href="#indhold">Spring til indhold</a>
     <header class="site-header">
       <div class="container site-header-inner">
-        <a class="site-titel" href="/">{foreningsnavn}</a>
+        <a class="site-titel" href="/">
+          <span class="logo-placeholder" aria-hidden="true"></span>
+          <span class="site-titel-navn">{foreningsnavn}</span>
+        </a>
         <nav class="site-nav" aria-label="Hovedmenu">
           <a href="/" aria-current={sti === '/' || sti.startsWith('/nyheder') ? 'page' : undefined}>Nyheder</a>
           <a href="/information" aria-current={sti.startsWith('/information') ? 'page' : undefined}>Information</a>

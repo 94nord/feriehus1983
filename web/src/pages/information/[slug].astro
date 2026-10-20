@@ -17,7 +17,7 @@ if (side === null) return Astro.rewrite('/404');
 ---
 
 <Layout titel={side?.titel}>
-  <p><a href="/information">Information</a></p>
+  <p class="tilbage"><a href="/information"><span aria-hidden="true">←&nbsp;</span>Information</a></p>
   {
     side && (
       <article class="artikel">

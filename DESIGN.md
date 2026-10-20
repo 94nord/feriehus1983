@@ -12,43 +12,43 @@ colors:
   daempet: "oklch(0.47 0.02 338)"
 typography:
   titel:
-    fontFamily: "'Atkinson Hyperlegible Next', system-ui, sans-serif"
+    fontFamily: "'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', system-ui, sans-serif"
     fontSize: "clamp(2rem, 1.5rem + 2vw, 2.75rem)"
     fontWeight: 700
     lineHeight: 1.15
     letterSpacing: "-0.01em"
   overskrift:
-    fontFamily: "'Atkinson Hyperlegible Next', system-ui, sans-serif"
+    fontFamily: "'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', system-ui, sans-serif"
     fontSize: "1.625rem"
     fontWeight: 700
     lineHeight: 1.25
     letterSpacing: "normal"
   underoverskrift:
-    fontFamily: "'Atkinson Hyperlegible Next', system-ui, sans-serif"
+    fontFamily: "'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', system-ui, sans-serif"
     fontSize: "1.3125rem"
     fontWeight: 700
     lineHeight: 1.3
     letterSpacing: "normal"
   broedtekst:
-    fontFamily: "'Atkinson Hyperlegible Next', system-ui, sans-serif"
+    fontFamily: "'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', system-ui, sans-serif"
     fontSize: "1.125rem"
     fontWeight: 400
     lineHeight: 1.6
     letterSpacing: "normal"
   liste-titel:
-    fontFamily: "'Atkinson Hyperlegible Next', system-ui, sans-serif"
+    fontFamily: "'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', system-ui, sans-serif"
     fontSize: "1.0625rem"
     fontWeight: 600
     lineHeight: 1.35
     letterSpacing: "normal"
   metadata:
-    fontFamily: "'Atkinson Hyperlegible Next', system-ui, sans-serif"
+    fontFamily: "'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', system-ui, sans-serif"
     fontSize: "0.9375rem"
     fontWeight: 400
     lineHeight: 1.45
     letterSpacing: "normal"
   navigation:
-    fontFamily: "'Atkinson Hyperlegible Next', system-ui, sans-serif"
+    fontFamily: "'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', system-ui, sans-serif"
     fontSize: "1.0625rem"
     fontWeight: 500
     lineHeight: 1.3
