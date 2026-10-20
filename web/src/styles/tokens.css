@@ -1,14 +1,43 @@
 :root {
-  --farve-tekst: #111111;
-  --farve-daempet: #555555;
-  --farve-kant: #cccccc;
-  --font: system-ui, sans-serif;
-  --rod-stoerrelse: 16px;
-  --rod-stoerrelse-lille: 12px;
+  /* Farver – se DESIGN.md */
+  --farve-klitrose: oklch(0.47 0.155 345);
+  --farve-klitrose-dyb: oklch(0.38 0.13 345);
+  --farve-klitrose-lys: oklch(0.955 0.025 345);
+  --farve-baggrund: oklch(1 0 0);
+  --farve-flade: oklch(0.972 0.008 338);
+  --farve-kant: oklch(0.885 0.012 338);
+  --farve-tekst: oklch(0.235 0.018 338);
+  --farve-daempet: oklch(0.47 0.02 338);
+
+  /* Typografi */
+  --font: 'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --rod-stoerrelse: 100%;
+  --tekst-titel: clamp(2rem, 1.5rem + 2vw, 2.75rem);
+  --tekst-overskrift: 1.625rem;
+  --tekst-underoverskrift: 1.3125rem;
+  --tekst-broed: 1.125rem;
+  --tekst-liste-titel: 1.0625rem;
+  --tekst-navigation: 1.0625rem;
+  --tekst-metadata: 0.9375rem;
+  --linjelaengde: 68ch;
+
+  /* Afstande */
+  --afstand-xs: 0.25rem;
   --afstand-s: 0.5rem;
   --afstand-m: 1rem;
   --afstand-l: 2rem;
+  --afstand-xl: 3.5rem;
+
+  /* Former */
+  --rundt-lille: 4px;
+  --rundt-mellem: 8px;
+  --kant: 1px solid var(--farve-kant);
+  --logo-stoerrelse: 2.5rem;
+
+  /* Bredder */
   --bredde-max: 72rem;
   --bredde-aside: 20rem;
-  --kant: 1px solid var(--farve-kant);
+
+  /* Bevægelse */
+  --overgang: 150ms cubic-bezier(0.25, 1, 0.5, 1);
 }
