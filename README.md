@@ -62,6 +62,13 @@ Kun den tekniske ansvarlige er Super Admin. Bestyrelsesmedlemmer inviteres under
 
 Uploads er begrænset til billeder og PDF, og Strapis telemetri er slået fra.
 
+**Glemt adgangskode** er spærret i Caddy, fordi der ikke er sat e-mail op. Den, der har
+glemt sin adgangskode, beder en Super Admin om at sætte en ny under **Settings → Users**.
+
+**Udseende i admin** (`cms/src/admin/app.tsx`): klitrose-farver, logo, danske tekster på
+login-siden og ingen Strapi-tutorials. Logoet i `cms/src/admin/extensions/logo.svg` er
+midlertidigt og skal skiftes til det rigtige, når det kommer.
+
 ## Ændre datamodellen
 
 Content-Type Builder virker kun i udviklingstilstand og er slået fra i Docker.

@@ -26,6 +26,10 @@
 	@blokeret path /api/auth/* /api/users /api/users/* /api/connect/*
 	respond @blokeret 404
 
+	# Glemt adgangskode kræver e-mail, som ikke er sat op; en Super Admin sætter ny adgangskode
+	@glemt path /admin/forgot-password /admin/reset-password
+	respond @glemt 404
+
 	redir / /admin
 	reverse_proxy cms:1337
 }
