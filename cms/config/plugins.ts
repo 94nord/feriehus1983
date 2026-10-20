@@ -1,15 +1,7 @@
 import type { Core } from '@strapi/strapi';
 
-const allowedMediaTypes = [
-  'image/*',
-  'video/*',
-  'audio/*',
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.*',
-  'text/plain',
-  'text/csv',
-];
+// Bestyrelsen skal kun bruge billeder og PDF
+const allowedMediaTypes = ['image/*', 'application/pdf'];
 
 const deniedTypes = [
   'image/svg+xml',

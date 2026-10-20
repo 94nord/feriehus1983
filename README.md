@@ -40,13 +40,24 @@ Første gang:
 
 ## Rollen "Bestyrelse"
 
-Opret i admin under **Settings → Administration Panel → Roles**:
+Rollen oprettes og opdateres automatisk ved hver opstart af Strapi (`cms/src/index.ts`).
+Ændringer af rollens rettigheder i admin nulstilles derfor ved næste genstart; ret i koden i stedet.
 
-- Content Manager: **Nyhed** og **Side** (opret, læs, opdater, slet, publicer) og **Link** (opret, læs, opdater, slet)
-- Media Library: adgang til at uploade og vælge filer
-- Ingen adgang til Settings, Content-Type Builder eller andre plugins
+| Område | Bestyrelsen kan |
+| --- | --- |
+| Nyheder og sider | Oprette, læse, rette, publicere og afpublicere. Ikke slette |
+| Links | Oprette, læse, rette og slette (links har ingen kladde) |
+| Mediebibliotek | Uploade, rette alt-tekst, hente og kopiere link. Ikke slette |
+| Brugere | Invitere og rette brugere, men kun med rollen Bestyrelse og ikke Super Admins |
+| Alt andet | Ingen adgang: Settings, roller, API-tokens, webhooks, User-samlingen (slutbrugere) m.m. |
 
-Inviter bestyrelsesmedlemmer under **Settings → Users** med rollen "Bestyrelse".
+Strapi tillader normalt alle med ret til at oprette brugere at tildele enhver rolle, også
+Super Admin. Det er spærret server-side for alle, der ikke selv er Super Admin.
+
+Kun den tekniske ansvarlige er Super Admin. Bestyrelsesmedlemmer inviteres under
+**Settings → Users** med rollen "Bestyrelse", én bruger pr. person.
+
+Uploads er begrænset til billeder og PDF, og Strapis telemetri er slået fra.
 
 ## Ændre datamodellen
 

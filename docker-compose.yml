@@ -28,6 +28,7 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 1337
+      STRAPI_TELEMETRY_DISABLED: "true"
       PUBLIC_URL: ${CMS_PUBLIC_URL}
       IS_PROXIED: "true"
       DATABASE_CLIENT: sqlite
