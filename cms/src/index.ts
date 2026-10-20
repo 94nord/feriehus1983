@@ -94,6 +94,25 @@ function spaerRolletildeling(strapi: Core.Strapi) {
   });
 }
 
+/**
+ * Strapis standardroller Editor og Author bruges ikke. De slettes ved opstart,
+ * så kun Super Admin og Bestyrelse findes. En rolle med brugere springes over.
+ */
+async function fjernStandardroller(strapi: Core.Strapi) {
+  const rolleService = strapi.service('admin::role');
+  for (const code of ['strapi-editor', 'strapi-author']) {
+    const rolle = await strapi.db.query('admin::role').findOne({ where: { code } });
+    if (!rolle) continue;
+
+    if ((await rolleService.getUsersCount(rolle.id)) > 0) {
+      strapi.log.warn(`Rollen ${rolle.name} har brugere og slettes derfor ikke`);
+      continue;
+    }
+    await rolleService.deleteByIds([rolle.id]);
+    strapi.log.info(`Standardrollen ${rolle.name} er slettet`);
+  }
+}
+
 export default {
   register({ strapi }: { strapi: Core.Strapi }) {
     spaerRolletildeling(strapi);
@@ -105,5 +124,7 @@ export default {
       (await hentBestyrelsesrolle(strapi)) ??
       (await rolleService.create({ name: ROLLE_NAVN, description: 'Redigerer nyheder, sider og links' }));
     await rolleService.assignPermissions(rolle.id, rettigheder());
+
+    await fjernStandardroller(strapi);
   },
 };

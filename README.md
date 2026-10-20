@@ -54,6 +54,9 @@ Rollen oprettes og opdateres automatisk ved hver opstart af Strapi (`cms/src/ind
 Strapi tillader normalt alle med ret til at oprette brugere at tildele enhver rolle, også
 Super Admin. Det er spærret server-side for alle, der ikke selv er Super Admin.
 
+Strapis standardroller Editor og Author slettes ved opstart, så kun Super Admin og
+Bestyrelse findes. Har en af dem brugere, springes den over med en advarsel i loggen.
+
 Kun den tekniske ansvarlige er Super Admin. Bestyrelsesmedlemmer inviteres under
 **Settings → Users** med rollen "Bestyrelse", én bruger pr. person.
 
