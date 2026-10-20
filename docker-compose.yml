@@ -22,7 +22,7 @@ services:
 
   cms:
     build: ./cms
-    image: feriehus1983-cms
+    image: ghcr.io/94nord/feriehus1983-cms:${IMAGE_TAG:-local}
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -51,7 +51,7 @@ services:
 
   web:
     build: ./web
-    image: feriehus1983-web
+    image: ghcr.io/94nord/feriehus1983-web:${IMAGE_TAG:-local}
     restart: unless-stopped
     environment:
       STRAPI_URL: http://cms:1337

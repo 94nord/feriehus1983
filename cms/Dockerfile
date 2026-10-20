@@ -11,6 +11,7 @@ RUN npm run build && npm prune --omit=dev
 
 # Runtime: kun det færdige resultat
 FROM node:22-bookworm-slim
+LABEL org.opencontainers.image.source=https://github.com/94nord/feriehus1983
 WORKDIR /opt/app
 ENV NODE_ENV=production
 # Admin-bygningen kræver mere hukommelse end Nodes standardgrænse

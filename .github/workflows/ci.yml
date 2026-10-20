@@ -1,0 +1,102 @@
+# Pull requests til main: byg og test.
+# Push til main: byg, test, push images til GHCR og deploy til Hetzner.
+name: CI og deploy
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Afbryd gamle kørsler på pull requests, men aldrig en igangværende deploy
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  IMAGE_TAG: ${{ github.sha }}
+  REGISTRY: ghcr.io/94nord
+
+jobs:
+  test:
+    name: Byg og test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tests/package-lock.json
+
+      - name: admin.localhost peger på runneren
+        run: echo "127.0.0.1 admin.localhost" | sudo tee -a /etc/hosts
+
+      - name: Installer Playwright
+        working-directory: tests
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      # Teststakken bygger images med tagget IMAGE_TAG, så de samme images pushes bagefter
+      - name: Kør tests
+        working-directory: tests
+        run: npm test
+
+      - name: Gem testrapport
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: tests/playwright-report
+          retention-days: 14
+
+      - name: Log ind på GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push testede images
+        if: github.event_name == 'push'
+        run: |
+          for image in feriehus1983-cms feriehus1983-web; do
+            docker push "$REGISTRY/$image:$IMAGE_TAG"
+          done
+
+  deploy:
+    name: Deploy til produktion
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+    env:
+      DEPLOY_DIR: /srv/feriehus1983
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: SSH-nøgle
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Kopiér konfiguration til serveren
+        run: |
+          scp -i ~/.ssh/deploy docker-compose.yml "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:$DEPLOY_DIR/"
+          scp -i ~/.ssh/deploy caddy/Caddyfile "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:$DEPLOY_DIR/caddy/"
+          scp -i ~/.ssh/deploy scripts/*.sh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:$DEPLOY_DIR/scripts/"
+
+      - name: Deploy
+        run: ssh -i ~/.ssh/deploy "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "$DEPLOY_DIR/scripts/deploy.sh $IMAGE_TAG"
