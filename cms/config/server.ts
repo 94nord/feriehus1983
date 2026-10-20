@@ -3,7 +3,7 @@ import type { Core } from '@strapi/strapi';
 const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Server => ({
   host: env('HOST', '0.0.0.0'),
   port: env.int('PORT', 1337),
-  // Offentlig adresse bag Caddy, fx https://admin.feriehus1983.dk
+  // Public address behind Caddy, e.g. https://admin.feriehus1983.dk
   url: env('PUBLIC_URL', 'http://localhost:1337'),
   proxy: { koa: env.bool('IS_PROXIED', false) },
   app: {

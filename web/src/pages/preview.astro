@@ -1,0 +1,61 @@
+---
+import { timingSafeEqual } from 'node:crypto';
+import { ADMIN_URL, PREVIEW_SECRET } from 'astro:env/server';
+import Layout from '../layouts/Layout.astro';
+import ArticleView from '../components/Article.astro';
+import Blocks from '../components/Blocks.astro';
+import NewsList from '../components/NewsList.astro';
+import { getPreview, type Article, type Page, type PreviewType } from '../lib/strapi';
+
+// Preview of articles and pages from the Strapi admin. Requires the secret,
+// is never cached, is not indexed and may only be framed by the admin.
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+if (ADMIN_URL) {
+  Astro.response.headers.set('Content-Security-Policy', `frame-ancestors 'self' ${ADMIN_URL}`);
+}
+
+function secretMatches(given: string | null) {
+  if (!PREVIEW_SECRET || !given) return false;
+  const a = Buffer.from(given);
+  const b = Buffer.from(PREVIEW_SECRET);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+const query = Astro.url.searchParams;
+const type = query.get('type');
+const id = query.get('id');
+const status = query.get('status') === 'published' ? 'published' : 'draft';
+
+if (!secretMatches(query.get('secret')) || (type !== 'article' && type !== 'page') || !id) {
+  return Astro.rewrite('/404');
+}
+
+let content: Article | Page | null = null;
+let failed = false;
+try {
+  content = await getPreview(type as PreviewType, id, status);
+} catch (e) {
+  console.error(e);
+  failed = true;
+  Astro.response.status = 503;
+}
+if (!content && !failed) return Astro.rewrite('/404');
+---
+
+<Layout title={content ? `Forhåndsvisning: ${content.title}` : 'Forhåndsvisning'}>
+  <p class="notice preview-notice">
+    {status === 'draft' ? 'Forhåndsvisning af kladde. Siden er ikke publiceret.' : 'Forhåndsvisning af den publicerede version.'}
+  </p>
+  {failed && <p class="notice">Forhåndsvisningen kunne ikke hentes lige nu. Prøv igen om lidt.</p>}
+  {content && type === 'article' && <ArticleView article={content as Article} />}
+  {
+    content && type === 'page' && (
+      <article class="article">
+        <h1>{content.title}</h1>
+        {content.body && <Blocks blocks={content.body} />}
+      </article>
+    )
+  }
+  <NewsList slot="aside" page={1} />
+</Layout>

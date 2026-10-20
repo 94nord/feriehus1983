@@ -1,0 +1,103 @@
+# Pull requests to main: build and test.
+# Push to main: build, test and push images to GHCR (deploy to Hetzner is commented out below).
+name: CI and deploy
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Cancel old runs on pull requests, but never a deploy in progress
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  IMAGE_TAG: ${{ github.sha }}
+  REGISTRY: ghcr.io/94nord
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tests/package-lock.json
+
+      - name: Point admin.localhost at the runner
+        run: echo "127.0.0.1 admin.localhost" | sudo tee -a /etc/hosts
+
+      - name: Install Playwright
+        working-directory: tests
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      # The test stack builds images tagged IMAGE_TAG, so the same images are pushed afterwards
+      - name: Run tests
+        working-directory: tests
+        run: npm test
+
+      - name: Save test report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: tests/playwright-report
+          retention-days: 14
+
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push tested images
+        if: github.event_name == 'push'
+        run: |
+          for image in feriehus1983-cms feriehus1983-web; do
+            docker push "$REGISTRY/$image:$IMAGE_TAG"
+          done
+
+  # Deploy is disabled until the server is set up (see README). Uncomment to enable.
+  # deploy:
+  #   name: Deploy to production
+  #   needs: test
+  #   if: github.event_name == 'push'
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 15
+  #   environment: production
+  #   permissions:
+  #     contents: read
+  #   env:
+  #     DEPLOY_DIR: /srv/feriehus1983
+  #   steps:
+  #     - uses: actions/checkout@v7
+
+  #     - name: SSH key
+  #       run: |
+  #         install -m 700 -d ~/.ssh
+  #         echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
+  #         chmod 600 ~/.ssh/deploy
+  #         echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+  #     - name: Copy configuration to the server
+  #       run: |
+  #         scp -i ~/.ssh/deploy docker-compose.yml "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:$DEPLOY_DIR/"
+  #         scp -i ~/.ssh/deploy caddy/Caddyfile "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:$DEPLOY_DIR/caddy/"
+  #         scp -i ~/.ssh/deploy scripts/*.sh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:$DEPLOY_DIR/scripts/"
+
+  #     - name: Deploy
+  #       run: ssh -i ~/.ssh/deploy "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "$DEPLOY_DIR/scripts/deploy.sh $IMAGE_TAG"

@@ -1,9 +1,41 @@
 h1,
 h2,
-h3 {
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: 700;
   overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--text-title);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: var(--text-heading);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--text-subheading);
+  line-height: 1.3;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
 }
 
 time {
-  color: var(--farve-daempet);
+  font-size: var(--text-meta);
+  line-height: 1.45;
+  color: var(--color-muted);
 }

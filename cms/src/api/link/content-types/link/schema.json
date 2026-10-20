@@ -5,13 +5,13 @@
     "singularName": "link",
     "pluralName": "links",
     "displayName": "Link",
-    "description": "Nyttige links"
+    "description": "Useful links"
   },
   "options": {
     "draftAndPublish": false
   },
   "attributes": {
-    "titel": {
+    "title": {
       "type": "string",
       "required": true,
       "maxLength": 120
@@ -21,11 +21,11 @@
       "required": true,
       "regex": "^https?://"
     },
-    "beskrivelse": {
+    "description": {
       "type": "text",
       "maxLength": 200
     },
-    "sortering": {
+    "sortOrder": {
       "type": "integer",
       "default": 0
     }

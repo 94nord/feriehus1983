@@ -1,31 +1,31 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Blocks from '../../components/Blocks.astro';
-import NyhedsListe from '../../components/NyhedsListe.astro';
-import { hentSide } from '../../lib/strapi';
+import NewsList from '../../components/NewsList.astro';
+import { getPage } from '../../lib/strapi';
 
 const { slug = '' } = Astro.params;
 
-let side;
+let page;
 try {
-  side = await hentSide(slug);
+  page = await getPage(slug);
 } catch (e) {
   console.error(e);
   Astro.response.status = 503;
 }
-if (side === null) return Astro.rewrite('/404');
+if (page === null) return Astro.rewrite('/404');
 ---
 
-<Layout titel={side?.titel}>
-  <p><a href="/information">Information</a></p>
+<Layout title={page?.title}>
+  <p class="back-link"><a href="/information"><span aria-hidden="true">←&nbsp;</span>Information</a></p>
   {
-    side && (
-      <article class="artikel">
-        <h1>{side.titel}</h1>
-        {side.indhold && <Blocks blocks={side.indhold} />}
+    page && (
+      <article class="article">
+        <h1>{page.title}</h1>
+        {page.body && <Blocks blocks={page.body} />}
       </article>
     )
   }
-  {!side && <p class="besked">Siden kunne ikke hentes lige nu. Prøv igen om lidt.</p>}
-  <NyhedsListe slot="aside" side={1} />
+  {!page && <p class="notice">Siden kunne ikke hentes lige nu. Prøv igen om lidt.</p>}
+  <NewsList slot="aside" page={1} />
 </Layout>

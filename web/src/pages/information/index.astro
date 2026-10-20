@@ -1,31 +1,31 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import NyhedsListe from '../../components/NyhedsListe.astro';
-import { hentSider, type Side } from '../../lib/strapi';
+import NewsList from '../../components/NewsList.astro';
+import { getPages, type Page } from '../../lib/strapi';
 
-let sider: Side[] | null = null;
+let pages: Page[] | null = null;
 try {
-  sider = await hentSider();
+  pages = await getPages();
 } catch (e) {
   console.error(e);
   Astro.response.status = 503;
 }
 ---
 
-<Layout titel="Information">
+<Layout title="Information">
   <h1>Information</h1>
-  {!sider && <p class="besked">Siderne kunne ikke hentes lige nu. Prøv igen om lidt.</p>}
-  {sider && sider.length === 0 && <p class="besked">Der er ingen sider endnu.</p>}
+  {!pages && <p class="notice">Siderne kunne ikke hentes lige nu. Prøv igen om lidt.</p>}
+  {pages && pages.length === 0 && <p class="notice">Der er ingen sider endnu.</p>}
   {
-    sider && sider.length > 0 && (
-      <ul class="sideliste">
-        {sider.map((side) => (
+    pages && pages.length > 0 && (
+      <ul class="page-list">
+        {pages.map((page) => (
           <li>
-            <a href={`/information/${side.slug}`}>{side.titel}</a>
+            <a href={`/information/${page.slug}`}>{page.title}</a>
           </li>
         ))}
       </ul>
     )
   }
-  <NyhedsListe slot="aside" side={1} />
+  <NewsList slot="aside" page={1} />
 </Layout>

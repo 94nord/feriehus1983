@@ -40,13 +40,56 @@ Første gang:
 
 ## Rollen "Bestyrelse"
 
-Opret i admin under **Settings → Administration Panel → Roles**:
+Rollen oprettes og opdateres automatisk ved hver opstart af Strapi (`cms/src/index.ts`).
+Ændringer af rollens rettigheder i admin nulstilles derfor ved næste genstart; ret i koden i stedet.
 
-- Content Manager: **Nyhed** og **Side** (opret, læs, opdater, slet, publicer) og **Link** (opret, læs, opdater, slet)
-- Media Library: adgang til at uploade og vælge filer
-- Ingen adgang til Settings, Content-Type Builder eller andre plugins
+| Område | Bestyrelsen kan |
+| --- | --- |
+| Nyheder og sider | Oprette, læse, rette, slette, publicere og afpublicere, også andres |
+| Links | Oprette, læse, rette og slette, også andres (links har ingen kladde) |
+| Mediebibliotek | Uploade, rette alt-tekst, hente og kopiere link. Ikke slette |
+| Brugere | Invitere og rette brugere, men kun med rollen Bestyrelse og ikke Super Admins |
+| Alt andet | Ingen adgang: Settings, roller, API-tokens, webhooks, User-samlingen (slutbrugere) m.m. |
 
-Inviter bestyrelsesmedlemmer under **Settings → Users** med rollen "Bestyrelse".
+Strapi tillader normalt alle med ret til at oprette brugere at tildele enhver rolle, også
+Super Admin. Det er spærret server-side for alle, der ikke selv er Super Admin.
+
+Strapis standardroller Editor og Author slettes ved opstart, så kun Super Admin og
+Bestyrelse findes. Har en af dem brugere, springes den over med en advarsel i loggen.
+
+Kun den tekniske ansvarlige er Super Admin. Bestyrelsesmedlemmer inviteres under
+**Settings → Users** med rollen "Bestyrelse", én bruger pr. person.
+
+Uploads er begrænset til billeder og PDF, og Strapis telemetri er slået fra.
+
+**Glemt adgangskode** er spærret i Caddy, fordi der ikke er sat e-mail op. Den, der har
+glemt sin adgangskode, beder en Super Admin om at sætte en ny under **Settings → Users**.
+
+**Udseende i admin** (`cms/src/admin/app.tsx`): petrol-farver, logo, danske tekster på
+login-siden og ingen Strapi-tutorials. Logoet i `cms/src/admin/extensions/logo.svg` er
+midlertidigt og skal skiftes til det rigtige, når det kommer.
+
+## Indholdsmodel
+
+Koden er på engelsk; bestyrelsen ser danske navne og feltlabels i admin
+(sættes i `cms/src/index.ts`).
+
+| Indholdstype (admin) | Model / API | Felter |
+| --- | --- | --- |
+| Nyhed | `api::article.article`, `/api/articles` | title, slug, excerpt, body, image |
+| Side | `api::page.page`, `/api/pages` | title, slug, body, sortOrder |
+| Link | `api::link.link`, `/api/links` | title, url, description, sortOrder |
+
+## Forhåndsvisning
+
+Nyheder og sider har en **Preview**-knap i admin, der viser kladden på hjemmesiden,
+før den publiceres. Strapi bygger adressen (`cms/config/admin.ts`), og Astro viser den
+på `/preview` (`web/src/pages/preview.astro`).
+
+- Kræver `SITE_URL` og `PREVIEW_SECRET` i `.env` (genereres af `scripts/generate-env.sh`).
+- Uden den rigtige nøgle giver `/preview` 404. Svaret caches ikke, indekseres ikke og
+  må kun vises i en ramme fra admin-domænet.
+- Links har ingen egen side og derfor ingen forhåndsvisning.
 
 ## Ændre datamodellen
 
@@ -89,16 +132,50 @@ De dækker nyhedsliste, bladring, nyhedssider, billeder, faste sider, links, kla
 404, grundlæggende tilgængelighed på desktop og mobil, og at Caddy spærrer
 slutbruger-login. Strapis admin-brugerflade testes ikke.
 
-## Deploy til Hetzner
+## Branches og deploy
+
+- Arbejd på `dev` (eller feature-branches) og lav en pull request til `main`.
+- **Pull request til `main`:** GitHub Actions bygger images og kører Playwright-testene.
+- **Merge/push til `main`:** byg, test og push de testede images til GHCR
+  (`ghcr.io/94nord/feriehus1983-cms|web:<commit-SHA>`). Deploy til Hetzner er
+  udkommenteret i `.github/workflows/ci.yml`, indtil serveren er sat op.
+
+Deployet på serveren (`scripts/deploy.sh`) tager backup, sætter `IMAGE_TAG` i `.env`,
+henter de nye images, starter dem og ruller tilbage til forrige version, hvis
+forsiden ikke svarer. En tilbagerulning gendanner ikke databasen; brug backuppen,
+hvis en ændring af datamodellen skal fortrydes.
+
+Anbefalet i GitHub under **Settings → Branches**: beskyt `main`, kræv pull request
+og at jobbet "Build and test" er grønt.
+
+### Opsætning af serveren (én gang)
 
 1. Server med Docker, firewall åben for 22, 80 og 443, kun SSH-nøgler.
 2. DNS: `feriehus1983.dk` og `admin.feriehus1983.dk` peger på serveren.
-3. Projektet i `/srv/feriehus1983`, `.env` med produktionsadresserne (se `.env.example`).
-4. `mkdir -p data/db data/uploads && chown -R 1000:1000 data/db data/uploads && chmod 700 data && docker compose up -d --build`
+3. Bruger `deploy` i gruppen `docker`, med en SSH-nøgle kun til GitHub Actions.
+4. Mappen `/srv/feriehus1983` ejet af `deploy`, med `caddy/` og `scripts/`:
+   ```bash
+   mkdir -p /srv/feriehus1983/{caddy,scripts,data/db,data/uploads}
+   chown -R 1000:1000 /srv/feriehus1983/data/db /srv/feriehus1983/data/uploads
+   chmod 700 /srv/feriehus1983/data
+   ```
    (Strapi-containeren kører som brugeren `node`, uid 1000)
-5. Caddy henter certifikater automatisk.
+5. `.env` med produktionsadresserne og egne hemmeligheder (se `.env.example`).
+6. Log ind på GHCR som `deploy` med et token, der kun kan læse pakker:
+   `docker login ghcr.io -u <github-bruger>`
+7. Første deploy: opret admin på `admin.feriehus1983.dk`, lav læsetokenet, sæt
+   `STRAPI_TOKEN` i `.env` og kør `docker compose up -d web`.
 
-Strapi-admin kræver ca. 2 GB hukommelse at bygge. Byg derfor imaget lokalt eller i CI på små servere (eller tilføj swap). Fra en Mac til en x86-server: `docker buildx build --platform linux/amd64`.
+### Secrets i GitHub
+
+Under **Settings → Environments → production**:
+
+| Secret | Indhold |
+| --- | --- |
+| `DEPLOY_HOST` | Serverens IP eller hostname |
+| `DEPLOY_USER` | `deploy` |
+| `DEPLOY_SSH_KEY` | Privat nøgle til `deploy`-brugeren |
+| `DEPLOY_KNOWN_HOSTS` | Output af `ssh-keyscan <server>` |
 
 ## Backup
 

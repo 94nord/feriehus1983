@@ -1,26 +1,29 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import Artikel from '../../components/Artikel.astro';
-import NyhedsListe from '../../components/NyhedsListe.astro';
-import { hentNyhed } from '../../lib/strapi';
-import { laesSide } from '../../lib/side';
+import ArticleView from '../../components/Article.astro';
+import NewsList from '../../components/NewsList.astro';
+import { getArticle } from '../../lib/strapi';
+import { readPageNumber } from '../../lib/pagination';
 
 const { slug = '' } = Astro.params;
-const side = laesSide(Astro.url);
-if (side === null) return Astro.rewrite('/404');
+const page = readPageNumber(Astro.url);
+if (page === null) return Astro.rewrite('/404');
 
-let nyhed;
+let article;
 try {
-  nyhed = await hentNyhed(slug);
+  article = await getArticle(slug);
 } catch (e) {
   console.error(e);
   Astro.response.status = 503;
 }
-if (nyhed === null) return Astro.rewrite('/404');
+if (article === null) return Astro.rewrite('/404');
 ---
 
-<Layout titel={nyhed?.titel} beskrivelse={nyhed?.uddrag}>
-  {nyhed && <Artikel nyhed={nyhed} />}
-  {!nyhed && <p class="besked">Nyheden kunne ikke hentes lige nu. Prøv igen om lidt.</p>}
-  <NyhedsListe slot="aside" side={side} aktivSlug={slug} />
+<Layout title={article?.title} description={article?.excerpt ?? undefined}>
+  <p class="back-link mobile-only">
+    <a href={page > 1 ? `/?side=${page}` : '/'}><span aria-hidden="true">←&nbsp;</span>Alle nyheder</a>
+  </p>
+  {article && <ArticleView article={article} />}
+  {!article && <p class="notice">Nyheden kunne ikke hentes lige nu. Prøv igen om lidt.</p>}
+  <NewsList slot="aside" page={page} activeSlug={slug} />
 </Layout>

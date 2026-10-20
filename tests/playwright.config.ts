@@ -18,6 +18,6 @@ export default defineConfig({
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobil', use: { ...devices['Pixel 7'] }, testIgnore: /sikkerhed\.spec\.ts/ },
+    { name: 'mobile', use: { ...devices['Pixel 7'] }, testIgnore: /security\.spec\.ts/ },
   ],
 });

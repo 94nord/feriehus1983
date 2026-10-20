@@ -1,15 +1,7 @@
 import type { Core } from '@strapi/strapi';
 
-const allowedMediaTypes = [
-  'image/*',
-  'video/*',
-  'audio/*',
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.*',
-  'text/plain',
-  'text/csv',
-];
+// The board only needs images and PDF
+const allowedMediaTypes = ['image/*', 'application/pdf'];
 
 const deniedTypes = [
   'image/svg+xml',
@@ -34,8 +26,15 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
   },
   upload: {
     config: {
-      // Max 10 MB pr. fil
+      // Max 10 MB per file
       sizeLimit: 10 * 1024 * 1024,
+      // Sizes generated on upload (thumbnail is always generated); xlarge is the largest the site uses
+      breakpoints: {
+        xlarge: 1600,
+        large: 1000,
+        medium: 750,
+        small: 500,
+      },
       security: {
         allowedTypes: allowedMediaTypes,
         deniedTypes,

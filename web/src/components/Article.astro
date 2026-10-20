@@ -1,0 +1,36 @@
+---
+import type { Article } from '../lib/strapi';
+import { formatDate, imageSrc, imageSrcset } from '../lib/strapi';
+import Blocks from './Blocks.astro';
+
+interface Props {
+  article: Article;
+  // The front page uses h2, because "Nyheder" is the page's h1 there
+  headingLevel?: 1 | 2;
+}
+
+const { article, headingLevel = 1 } = Astro.props;
+const Heading = `h${headingLevel}`;
+---
+
+<article class="article">
+  <header>
+    <Heading class="article-title">{article.title}</Heading>
+    <time datetime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
+  </header>
+  {
+    article.image && (
+      <figure class="article-image">
+        <img
+          src={imageSrc(article.image)}
+          srcset={imageSrcset(article.image)}
+          sizes="(max-width: 768px) 100vw, 60vw"
+          width={article.image.width}
+          height={article.image.height}
+          alt={article.image.alternativeText ?? ''}
+        />
+      </figure>
+    )
+  }
+  {article.body && <Blocks blocks={article.body} />}
+</article>

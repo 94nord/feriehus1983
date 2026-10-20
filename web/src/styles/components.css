@@ -1,54 +1,349 @@
-.spring-over {
+/* Skip link */
+.skip-link {
   position: absolute;
+  top: var(--space-s);
   left: -100vw;
+  padding: var(--space-s) var(--space-m);
+  border-radius: var(--radius-small);
+  background: var(--color-petrol);
+  color: var(--color-paper);
+  font-weight: 600;
+  text-decoration: none;
 }
 
-.spring-over:focus {
-  left: var(--afstand-m);
+.skip-link:focus {
+  left: var(--space-m);
 }
 
+.skip-link:hover {
+  color: var(--color-paper);
+}
+
+/* Site header */
+/* Petrol band; the marehalm board starts below it */
 .site-header {
-  border-bottom: var(--kant);
+  background: var(--color-petrol);
+  color: var(--color-paper);
+}
+
+.site-header :focus-visible {
+  outline-color: var(--color-marehalm);
 }
 
 .site-header-inner {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--afstand-m);
-  padding-top: var(--afstand-m);
-  padding-bottom: var(--afstand-m);
+  gap: var(--space-s) var(--space-l);
+  padding-top: var(--space-m);
+  padding-bottom: var(--space-m);
+}
+
+.site-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--text-body);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-paper);
+  text-decoration: none;
+}
+
+.site-title:hover {
+  color: var(--color-paper);
+}
+
+.site-title:hover .site-title-name {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+/* Temporary logo placeholder until /logo.svg exists */
+.logo-placeholder {
+  flex: none;
+  width: var(--logo-size);
+  height: var(--logo-size);
+  border: 1px solid var(--color-marehalm-dark);
+  border-radius: var(--radius-small);
 }
 
 .site-nav {
   display: flex;
-  gap: var(--afstand-m);
+  flex-wrap: wrap;
+  column-gap: var(--space-l);
 }
 
+.site-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--text-nav);
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--color-marehalm);
+  text-decoration-line: none;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+}
+
+.site-nav a:hover {
+  color: var(--color-paper);
+  text-decoration-line: underline;
+}
+
+/* Same weight as the other items, so the menu does not shift; the underline marks it */
+.site-nav a[aria-current="page"] {
+  color: var(--color-paper);
+  text-decoration-line: underline;
+}
+
+/* Site footer */
 .site-footer {
-  border-top: var(--kant);
-  padding: var(--afstand-m) 0;
+  background: var(--color-petrol);
+  padding: var(--space-s) 0;
+  font-size: var(--text-meta);
+  line-height: 1.45;
+  color: var(--color-marehalm-dark);
 }
 
-.nyhedsliste ol {
+/* Notices: empty states and errors */
+.notice {
+  max-width: var(--measure);
+  padding: var(--space-m) 1.25rem;
+  border: var(--border);
+  border-radius: var(--radius-medium);
+  background: var(--color-marehalm);
+}
+
+/* Articles and static pages */
+.article {
+  max-width: var(--measure);
+}
+
+.article > * + * {
+  margin-top: 1.25rem;
+}
+
+.article > header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin-bottom: var(--space-l);
+}
+
+.article > :is(h2, h3, h4, h5, h6) {
+  margin-top: var(--space-l);
+}
+
+.article > :is(h2, h3, h4, h5, h6) + * {
+  margin-top: var(--space-s);
+}
+
+.article figure {
+  margin: var(--space-l) 0;
+}
+
+.article figure img {
+  display: block;
+  border-radius: var(--radius-small);
+}
+
+/* Images in the body are smaller than the main image: at most 32rem wide and
+   26rem high, keeping their own proportions. The box always has a width, so the
+   lazy-loaded image is fetched; tall images are fitted inside it. */
+.article .body-image img {
+  width: 100%;
+  max-width: 32rem;
+  height: auto;
+  max-height: 26rem;
+  object-fit: contain;
+  object-position: left top;
+}
+
+.article :is(ul, ol) {
+  padding-left: 1.5rem;
+}
+
+.article li + li {
+  margin-top: var(--space-s);
+}
+
+.article li::marker {
+  color: var(--color-muted);
+}
+
+.article blockquote {
+  position: relative;
+  margin: var(--space-l) 0;
+  padding-left: 1.5rem;
+  font-size: var(--text-subheading);
+  line-height: 1.45;
+}
+
+.article blockquote::before {
+  content: "„";
+  position: absolute;
+  left: -0.1em;
+  top: -0.55em;
+  font-size: 2.5em;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-petrol);
+}
+
+.article pre {
+  overflow-x: auto;
+  padding: var(--space-m);
+  border-radius: var(--radius-medium);
+  background: var(--color-marehalm);
+  font-size: var(--text-meta);
+}
+
+.back-link {
+  margin-bottom: var(--space-m);
+  font-size: var(--text-meta);
+}
+
+/* News list in the sidebar */
+.news-list-heading {
+  margin-bottom: var(--space-m);
+  font-size: var(--text-heading);
+  line-height: 1.25;
+}
+
+/* The article title looks the same whether it is an h1 or an h2 */
+.article-title {
+  font-size: var(--text-title);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.news-list ol {
   list-style: none;
+  margin: 0;
   padding: 0;
 }
 
-.nyhedsliste li {
-  padding: var(--afstand-s) 0;
-  border-bottom: var(--kant);
+.news-list li {
+  border-bottom: var(--border);
 }
 
-.nyhedsliste a {
+.news-list li:first-child {
+  border-top: var(--border);
+}
+
+.news-list a {
   display: flex;
   flex-direction: column;
+  gap: var(--space-xs);
+  margin: 1px 0;
+  padding: 0.75rem;
+  border-radius: var(--radius-small);
+  color: var(--color-text);
+  text-decoration: none;
 }
 
-.nyhedsliste a[aria-current="page"] {
-  font-weight: bold;
+.news-list a:hover {
+  color: var(--color-text);
+}
+
+.news-list-title {
+  font-size: var(--text-list-title);
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+.news-list a:hover .news-list-title {
+  text-decoration-line: underline;
+}
+
+.news-list-excerpt {
+  font-size: var(--text-meta);
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
+.news-list a[aria-current="page"] {
+  background: var(--color-marehalm);
+}
+
+/* Same weight as the other titles, so the text does not reflow when selected */
+.news-list a[aria-current="page"] .news-list-title {
+  color: var(--color-petrol);
+}
+
+.news-list .notice {
+  font-size: var(--text-meta);
 }
 
 .pagination {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-s);
+  margin-top: var(--space-m);
+  font-size: var(--text-meta);
+}
+
+.pagination a {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.pagination > :last-child {
+  justify-self: end;
+}
+
+.pagination-status {
+  color: var(--color-muted);
+}
+
+/* Link and page lists */
+:is(.link-list, .page-list) {
+  list-style: none;
+  max-width: var(--measure);
+  margin: var(--space-l) 0 0;
+  padding: 0;
+}
+
+:is(.link-list, .page-list) li {
+  padding: var(--space-m) 0;
+  border-bottom: var(--border);
+}
+
+:is(.link-list, .page-list) li:first-child {
+  border-top: var(--border);
+}
+
+:is(.link-list, .page-list) a {
+  font-size: var(--text-list-title);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.link-list p {
+  margin-top: var(--space-xs);
+}
+
+.page-content > h1 + .notice {
+  margin-top: var(--space-l);
+}
+
+.page-content > h1 + p {
+  margin-top: var(--space-m);
+}
+
+/* Preview from the admin */
+.preview-notice {
+  margin-bottom: var(--space-l);
 }

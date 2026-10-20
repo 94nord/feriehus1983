@@ -1,32 +1,32 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import NyhedsListe from '../components/NyhedsListe.astro';
-import { hentLinks, type Link } from '../lib/strapi';
+import NewsList from '../components/NewsList.astro';
+import { getLinks, type Link } from '../lib/strapi';
 
 let links: Link[] | null = null;
 try {
-  links = await hentLinks();
+  links = await getLinks();
 } catch (e) {
   console.error(e);
   Astro.response.status = 503;
 }
 ---
 
-<Layout titel="Nyttige links">
+<Layout title="Nyttige links">
   <h1>Nyttige links</h1>
-  {!links && <p class="besked">Linkene kunne ikke hentes lige nu. Prøv igen om lidt.</p>}
-  {links && links.length === 0 && <p class="besked">Der er ingen links endnu.</p>}
+  {!links && <p class="notice">Linkene kunne ikke hentes lige nu. Prøv igen om lidt.</p>}
+  {links && links.length === 0 && <p class="notice">Der er ingen links endnu.</p>}
   {
     links && links.length > 0 && (
-      <ul class="linkliste">
+      <ul class="link-list">
         {links.map((link) => (
           <li>
-            <a href={link.url} rel="noopener noreferrer">{link.titel}</a>
-            {link.beskrivelse && <p>{link.beskrivelse}</p>}
+            <a href={link.url} rel="noopener noreferrer">{link.title}</a>
+            {link.description && <p>{link.description}</p>}
           </li>
         ))}
       </ul>
     )
   }
-  <NyhedsListe slot="aside" side={1} />
+  <NewsList slot="aside" page={1} />
 </Layout>

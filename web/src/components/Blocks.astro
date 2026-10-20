@@ -1,10 +1,10 @@
 ---
-import type { Block, ListeElement } from '../lib/strapi';
-import { inlineTilHtml } from '../lib/inline';
-import { billedeSrcset, medieUrl } from '../lib/strapi';
+import type { Block, ListElement } from '../lib/strapi';
+import { inlineToHtml } from '../lib/inline';
+import { imageSrc, imageSrcset } from '../lib/strapi';
 
 interface Props {
-  blocks: (Block | ListeElement)[];
+  blocks: (Block | ListElement)[];
 }
 
 const { blocks } = Astro.props;
@@ -14,23 +14,23 @@ const { blocks } = Astro.props;
   blocks.map((block) => {
     switch (block.type) {
       case 'paragraph':
-        return <p set:html={inlineTilHtml(block.children)} />;
+        return <p set:html={inlineToHtml(block.children)} />;
       case 'heading': {
-        // h1 er forbeholdt nyhedens titel, så overskrifter i teksten starter ved h2
+        // h1 is reserved for the page title, so headings in the body start at h2
         const Tag = `h${Math.max(2, Math.min(block.level + 1, 6))}`;
-        return <Tag set:html={inlineTilHtml(block.children)} />;
+        return <Tag set:html={inlineToHtml(block.children)} />;
       }
       case 'quote':
-        return <blockquote set:html={inlineTilHtml(block.children)} />;
+        return <blockquote set:html={inlineToHtml(block.children)} />;
       case 'code':
-        return <pre><code set:html={inlineTilHtml(block.children)} /></pre>;
+        return <pre><code set:html={inlineToHtml(block.children)} /></pre>;
       case 'list': {
         const Tag = block.format === 'ordered' ? 'ol' : 'ul';
         return (
           <Tag>
             {block.children.map((element) =>
               element.type === 'list-item' ? (
-                <li set:html={inlineTilHtml(element.children)} />
+                <li set:html={inlineToHtml(element.children)} />
               ) : (
                 <li><Astro.self blocks={[element]} /></li>
               )
@@ -40,11 +40,11 @@ const { blocks } = Astro.props;
       }
       case 'image':
         return (
-          <figure>
+          <figure class="body-image">
             <img
-              src={medieUrl(block.image.url)}
-              srcset={billedeSrcset(block.image)}
-              sizes="(max-width: 768px) 100vw, 60vw"
+              src={imageSrc(block.image)}
+              srcset={imageSrcset(block.image)}
+              sizes="(max-width: 768px) 100vw, 32rem"
               width={block.image.width}
               height={block.image.height}
               alt={block.image.alternativeText ?? ''}

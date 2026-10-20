@@ -1,11 +1,11 @@
-# Adresserne kommer fra .env:
-#   produktion: feriehus1983.dk og admin.feriehus1983.dk (automatisk HTTPS)
-#   lokalt:     http://localhost og http://admin.localhost
+# The addresses come from .env:
+#   production: feriehus1983.dk and admin.feriehus1983.dk (automatic HTTPS)
+#   local:      http://localhost and http://admin.localhost
 
 {$SITE_ADDRESS} {
 	encode zstd gzip
 
-	# Billeder fra Strapis mediebibliotek
+	# Images from Strapi's media library
 	handle /uploads/* {
 		reverse_proxy cms:1337
 	}
@@ -22,9 +22,13 @@
 		max_size 20MB
 	}
 
-	# Login og registrering for slutbrugere bruges ikke
-	@blokeret path /api/auth/* /api/users /api/users/* /api/connect/*
-	respond @blokeret 404
+	# End-user login and registration are not used
+	@end_user_auth path /api/auth/* /api/users /api/users/* /api/connect/*
+	respond @end_user_auth 404
+
+	# Password reset needs email, which is not set up; a Super Admin sets new passwords
+	@password_reset path /admin/forgot-password /admin/reset-password
+	respond @password_reset 404
 
 	redir / /admin
 	reverse_proxy cms:1337
